@@ -15,9 +15,9 @@ This project integrates Uber's API with Vue.js to create a user-friendly ride-sh
 
 ### Installation
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/melih0132/UBER_S4.git
-   ```
+  ```bash
+  git clone https://github.com/melih0132/UBER_S4.git
+  ```
 
 2. Install dependencies:
   ```bash
@@ -38,11 +38,6 @@ This project integrates Uber's API with Vue.js to create a user-friendly ride-sh
 - The project uses Vue.js components for modular development.
 - Key components include `RideRequest.vue`, `RideHistory.vue`, and `UserAuth.vue`.
 
-## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 ```
 
 ### Directory Structure
