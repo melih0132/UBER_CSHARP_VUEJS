@@ -1,0 +1,101 @@
+﻿@model IEnumerable<UberApi.Models.EntityFramework.Commande>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.IdCb)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdAdresse)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PrixCommande)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TempsCommande)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.HeureCreation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.HeureCommande)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EstLivraison)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StatutCommande)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.RefusDemandee)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.RemboursementEffectue)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdLivreurNavigation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdPanierNavigation)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdCb)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdAdresse)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PrixCommande)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TempsCommande)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.HeureCreation)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.HeureCommande)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EstLivraison)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StatutCommande)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.RefusDemandee)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.RemboursementEffectue)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdLivreurNavigation.IdLivreur)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdPanierNavigation.IdPanier)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.IdCommande">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.IdCommande">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.IdCommande">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

@@ -1,0 +1,436 @@
+<template>
+    <div class="container my-5">
+        <div class="account mt-5">
+            <h1 class="mb-4 text-center">Mon compte</h1>
+            <div class="row">
+                <!-- Sidebar Client -->
+                <div class="col-md-3">
+                    <ul id="sidebar-menu" class="list-group shadow-sm">
+                        <li class="list-group-item active" data-target="content-informations">
+                            <i class="fas fa-user me-2"></i>Informations compte
+                        </li>
+                        <ul class="list-group">
+                            <li class="list-group-item" data-target="content-securite">
+                                <i class="fas fa-shield-alt me-2"></i> Sécurité
+                            </li>
+                            <li class="list-group-item" data-target="content-confidentialite">
+                                <i class="fas fa-user-shield me-2"></i> Confidentialité et données
+                            </li>
+                        </ul>
+                    </ul>
+                </div>
+
+                <!-- Main Content Client -->
+                <div class="col-md-9">
+                    <div class="p-4">
+                        <!-- Informations compte -->
+                        <div id="content-informations" class="content-section active">
+                            <div class="mb-4">
+                                <img :src="userStore.user.PhotoProfile || profileImageUrl" alt="Photo de profil"
+                                    class="pdp_picture" id="profileImage">
+                            </div>
+                            <div class="row">
+                                <div class="col-12" v-for="(value, key) in userFields" :key="key">
+                                    <p><strong>{{ key }} :</strong> {{ formatUserField(value) }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sécurité -->
+                        <div id="content-securite" class="content-section">
+                            <h2 class="h4 mb-4">Sécurité</h2>
+                            <div>
+                                <p>Configurer vos paramètres de sécurité ici.</p>
+                            </div>
+                        </div>
+
+                        <!-- Confidentialité et données -->
+                        <div id="content-confidentialite" class="content-section">
+                            <h2 class="h4 mb-4">Confidentialité et données</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import { useUserStore } from '@/stores/userStore';
+import { storeToRefs } from 'pinia';
+
+export default {
+    setup() {
+        const userStore = useUserStore();
+        const { user } = storeToRefs(userStore);
+
+        console.log('UserStore initialized:', userStore);
+        console.log('User data:', user);
+
+        return {
+            userStore,
+            user,
+            profileImageUrl: 'https://static.vecteezy.com/ti/vetor-gratis/p2/9734564-default-avatar-profile-icon-of-social-media-user-vetor.jpg',
+        };
+    },
+    computed: {
+        userFields() {
+            console.log('Computed userFields:', this.user);
+            return {
+                "Prénom": this.user.prenomUser,
+                "Nom": this.user.nomUser,
+                "Genre": this.user.genreUser,
+                "Date de naissance": this.user.dateNaissance,
+                "Numéro de téléphone": this.user.telephone,
+                "Adresse mail": this.user.email,
+                "Type de client": this.user.role
+            };
+        }
+    },
+    methods: {
+        formatUserField(value) {
+            console.log('Formatting field:', value);
+            if (!value) return 'Non renseigné';
+            if (typeof value === 'string') return value.charAt(0).toUpperCase() + value.slice(1);
+            if (value instanceof Date) return value.toLocaleDateString();
+            return value;
+        }
+    }
+};
+</script>
+
+<style scoped>
+body {
+    background-color: #fff;
+    color: #000;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+.content-section {
+    display: none;
+}
+
+.content-section.active {
+    display: block;
+}
+
+.div-cb,
+.account,
+.form-login,
+.form-register,
+.card {
+    max-width: 1200px;
+    margin: auto;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+h1,
+h2,
+h5 {
+    color: #000;
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+h5 {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+/* List Groups */
+.list-group {
+    cursor: pointer;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    background-color: #333;
+}
+
+.list-group-item {
+    font-size: 1rem;
+    padding: 15px 20px;
+    background-color: #444;
+    color: #fff;
+    border: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.list-group-item a {
+    color: #fff;
+
+    gap: 10px;
+}
+
+.list-group-item:hover {
+    background-color: #555;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.list-group-item.active {
+    background-color: #222;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.list-group-item i {
+    font-size: 1.2rem;
+}
+
+.list-item-flex {
+    font-size: 1rem;
+    padding: 15px 20px;
+    background-color: #444;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.list-item-flex:hover {
+    background-color: #555;
+    color: #fff;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.list-item-flex.active {
+    background-color: #222;
+    color: #fff;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.list-item-flex a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.3s ease;
+}
+
+.list-item-flex i {
+    padding-right: 10px;
+    font-size: 1.2rem;
+}
+
+/* Buttons */
+.btn-cb,
+.btn-details,
+.btn-compte {
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    background-color: #000;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.btn-cb:hover,
+.btn-compte:hover {
+    background: #282828;
+    color: #fff;
+}
+
+.btn-retour {
+    font-size: 14px;
+    font-weight: 600;
+    background: #b8b8b8;
+    color: #000000;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.btn-retour:hover {
+    background: #cbcbcb;
+    color: #282828;
+}
+
+/* Inputs & Forms */
+label {
+    font-weight: 500;
+    margin-bottom: 5px;
+    display: block;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #000;
+}
+
+textarea {
+    height: 120px;
+}
+
+/* Profile Picture */
+.pdp_picture {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.pdp_picture:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.pp_container .btn {
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 5px;
+    margin-left: 20px;
+    padding: 10px 15px;
+    background-color: transparent;
+    border: 2px solid #000;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.pp_container .btn:hover {
+    background-color: #444;
+    color: #fff;
+    border-color: #444;
+}
+
+#fileInput {
+    display: none;
+}
+
+.link-photo {
+    cursor: pointer;
+}
+
+.link-photo:hover {
+    text-decoration: underline;
+}
+
+/* Alerts */
+.alert {
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.alert-danger {
+    background-color: rgba(248, 215, 218, 0.9);
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.success-container {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    animation: fadeInFromTop 0.5s ease-out forwards;
+    z-index: 9999;
+}
+
+@keyframes fadeInFromTop {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    .list-group-item {
+        text-align: center;
+        font-size: 0.9rem;
+        padding: 10px 15px;
+        flex-direction: column;
+    }
+
+    .pdp_picture {
+        width: 80px;
+        height: 80px;
+    }
+
+    .pp_container .btn {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+}
+
+.sup-item {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.sup-icon {
+    padding: 8px;
+    border-radius: 10px;
+}
+
+.sup-icon:hover {
+    background-color: #f0f0f0;
+}
+
+.table-uber {
+    background-color: rgb(0, 0, 0);
+    color: #fff;
+}
+</style>

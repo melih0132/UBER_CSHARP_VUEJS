@@ -1,0 +1,89 @@
+﻿@model UberApi.Models.EntityFramework.Commande
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Commande</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="IdCommande" />
+            <div class="form-group">
+                <label asp-for="IdPanier" class="control-label"></label>
+                <select asp-for="IdPanier" class="form-control" asp-items="ViewBag.IdPanier"></select>
+                <span asp-validation-for="IdPanier" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdLivreur" class="control-label"></label>
+                <select asp-for="IdLivreur" class="form-control" asp-items="ViewBag.IdLivreur"></select>
+                <span asp-validation-for="IdLivreur" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdCb" class="control-label"></label>
+                <input asp-for="IdCb" class="form-control" />
+                <span asp-validation-for="IdCb" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdAdresse" class="control-label"></label>
+                <input asp-for="IdAdresse" class="form-control" />
+                <span asp-validation-for="IdAdresse" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PrixCommande" class="control-label"></label>
+                <input asp-for="PrixCommande" class="form-control" />
+                <span asp-validation-for="PrixCommande" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="TempsCommande" class="control-label"></label>
+                <input asp-for="TempsCommande" class="form-control" />
+                <span asp-validation-for="TempsCommande" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="HeureCreation" class="control-label"></label>
+                <input asp-for="HeureCreation" class="form-control" />
+                <span asp-validation-for="HeureCreation" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="HeureCommande" class="control-label"></label>
+                <input asp-for="HeureCommande" class="form-control" />
+                <span asp-validation-for="HeureCommande" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="EstLivraison" /> @Html.DisplayNameFor(model => model.EstLivraison)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="StatutCommande" class="control-label"></label>
+                <input asp-for="StatutCommande" class="form-control" />
+                <span asp-validation-for="StatutCommande" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="RefusDemandee" /> @Html.DisplayNameFor(model => model.RefusDemandee)
+                </label>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="RemboursementEffectue" /> @Html.DisplayNameFor(model => model.RemboursementEffectue)
+                </label>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

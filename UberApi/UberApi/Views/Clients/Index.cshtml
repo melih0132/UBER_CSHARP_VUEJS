@@ -1,0 +1,119 @@
+﻿@model IEnumerable<UberApi.Models.EntityFramework.Client>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.GenreUser)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NomUser)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PrenomUser)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateNaissance)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Telephone)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EmailUser)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MotDePasseUser)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PhotoProfile)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SouhaiteRecevoirBonPlan)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MfaActivee)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TypeClient)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.LastConnexion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DemandeSuppression)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdAdresseNavigation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdEntrepriseNavigation)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.GenreUser)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NomUser)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PrenomUser)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateNaissance)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Telephone)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EmailUser)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MotDePasseUser)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PhotoProfile)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SouhaiteRecevoirBonPlan)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MfaActivee)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TypeClient)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.LastConnexion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DemandeSuppression)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdAdresseNavigation.IdAdresse)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdEntrepriseNavigation.IdEntreprise)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.IdClient">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.IdClient">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.IdClient">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

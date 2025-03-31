@@ -1,0 +1,113 @@
+﻿@model IEnumerable<UberApi.Models.EntityFramework.Vehicule>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Immatriculation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Marque)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Modele)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Capacite)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AccepteAnimaux)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EstElectrique)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EstConfortable)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EstRecent)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EstLuxueux)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Couleur)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StatusProcessusLogistique)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DemandeModification)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DemandeModificationEffectue)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdCoursierNavigation)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Immatriculation)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Marque)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Modele)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Capacite)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AccepteAnimaux)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EstElectrique)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EstConfortable)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EstRecent)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EstLuxueux)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Couleur)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StatusProcessusLogistique)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DemandeModification)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DemandeModificationEffectue)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdCoursierNavigation.IdCoursier)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.IdVehicule">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.IdVehicule">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.IdVehicule">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

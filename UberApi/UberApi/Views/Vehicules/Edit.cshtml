@@ -1,0 +1,99 @@
+﻿@model UberApi.Models.EntityFramework.Vehicule
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Vehicule</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="IdVehicule" />
+            <div class="form-group">
+                <label asp-for="IdCoursier" class="control-label"></label>
+                <select asp-for="IdCoursier" class="form-control" asp-items="ViewBag.IdCoursier"></select>
+                <span asp-validation-for="IdCoursier" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Immatriculation" class="control-label"></label>
+                <input asp-for="Immatriculation" class="form-control" />
+                <span asp-validation-for="Immatriculation" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Marque" class="control-label"></label>
+                <input asp-for="Marque" class="form-control" />
+                <span asp-validation-for="Marque" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Modele" class="control-label"></label>
+                <input asp-for="Modele" class="form-control" />
+                <span asp-validation-for="Modele" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Capacite" class="control-label"></label>
+                <input asp-for="Capacite" class="form-control" />
+                <span asp-validation-for="Capacite" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="AccepteAnimaux" /> @Html.DisplayNameFor(model => model.AccepteAnimaux)
+                </label>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="EstElectrique" /> @Html.DisplayNameFor(model => model.EstElectrique)
+                </label>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="EstConfortable" /> @Html.DisplayNameFor(model => model.EstConfortable)
+                </label>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="EstRecent" /> @Html.DisplayNameFor(model => model.EstRecent)
+                </label>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="EstLuxueux" /> @Html.DisplayNameFor(model => model.EstLuxueux)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="Couleur" class="control-label"></label>
+                <input asp-for="Couleur" class="form-control" />
+                <span asp-validation-for="Couleur" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StatusProcessusLogistique" class="control-label"></label>
+                <input asp-for="StatusProcessusLogistique" class="form-control" />
+                <span asp-validation-for="StatusProcessusLogistique" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DemandeModification" class="control-label"></label>
+                <input asp-for="DemandeModification" class="form-control" />
+                <span asp-validation-for="DemandeModification" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="DemandeModificationEffectue" /> @Html.DisplayNameFor(model => model.DemandeModificationEffectue)
+                </label>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
