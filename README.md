@@ -1,4 +1,4 @@
-# UBER AVEC API CORE & VUE JS - S4
+# UBER AVEC API CORE & VUE JS - in development
 
 ## Overview
 This project integrates Uber's API with Vue.js to create a user-friendly ride-sharing application.
