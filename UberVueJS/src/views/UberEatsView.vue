@@ -1,96 +1,94 @@
 <template>
-
     <main class="main-content">
         <section class="section-container">
             <header class="section-header">
                 <h1 class="header-title">Vos restos locaux livrés chez vous</h1>
-                <p class="header-description">Trouvez et faites-vous livrer les meilleurs plats des restaurants proches de chez vous.</p>
+                <p class="header-description">
+                    Trouvez et faites-vous livrer les meilleurs plats des restaurants proches de chez vous.
+                </p>
             </header>
+
             <div class="form-section">
-                <form class="form-container">
+                <form class="form-container" @submit.prevent="recherche">
                     <div class="form-grid">
-                        <!-- Ville Input -->
+                        <!-- Ville -->
                         <div class="form-group d-flex justify-content-center">
                             <label for="recherche_ville" class="form-label">Ville</label>
-                            <input type="text" v-model="rechercheVille" id="recherche_ville" class="form-input" required 
-                                placeholder="Recherchez une ville" @keyup.enter="handleRecherche" />
+                            <input type="text" v-model="rechercheVille" id="recherche_ville" class="form-input" required
+                                placeholder="Recherchez une ville" />
                         </div>
 
-                        <!-- <div class="form-group date-picker-container">
-                            <label for="selected_jour" class="form-label">Date</label>
-                            <div class="input-group">
-                                <input type="text" v-model="selectedJour" id="selected_jour" name="selected_jour"
-                                    class="form-input flatpickr-date" placeholder="jj/mm/aaaa" />
-                            </div>
+                        <!-- Date -->
+                        <div class="form-group d-flex justify-content-center">
+                            <label for="selectedDate" class="form-label">Date</label>
+                            <input type="date" v-model="selectedDate" id="selectedDate" class="form-input" required />
                         </div>
 
-                        <div class="form-group">
-                            <label for="selected_horaires" class="form-label">Créneau horaire</label>
-                            <select v-model="selectedHoraire" id="selected_horaires" class="form-select">
-                                <option value="" disabled>Sélectionnez un créneau</option>
-                                <option v-for="slot in slots" :key="slot" :value="slot">
-                                    {{ slot }}
-                                </option>
-                            </select>
-                        </div> -->
+                        <!-- Heure -->
+                        <div class="form-group d-flex justify-content-center">
+                            <label for="selectedTime" class="form-label">Heure</label>
+                            <input type="time" v-model="selectedTime" id="selectedTime" class="form-input" required />
+                        </div>
 
-                        <!-- Submit Button -->
+                        <!-- Submit -->
                         <div class="form-row">
-                            <RouterLink to="/etablissements" @click.capture="handleRecherche" class="form-button">Rechercher</RouterLink>
+                            <button type="submit" class="form-button">Rechercher</button>
                         </div>
                     </div>
                 </form>
             </div>
         </section>
     </main>
-
 </template>
 
-<script>
-import { RouterLink } from "vue-router";
-import Fuse from "fuse.js"; // Import de Fuse.js
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import Fuse from 'fuse.js'
+import { getVilles } from '@/services/villesService'
 
-export default {
-  data() {
-    return {
-      villes: ['Paris', 'Lyon', 'Marseille', 'Bordeaux', 'Lille', 'Toulouse', 'Nice', 'Nantes', 'Strasbourg', 'Annecy'], // Liste des villes
-      rechercheVille: "", // Modèle pour la ville
-    };
-  },
-  methods: {
-    async handleRecherche() {
-      const ville = this.rechercheVille;
+const router = useRouter()
 
-      // Configuration de Fuse.js
-      const fuse = new Fuse(this.villes, {
-        includeScore: true, // Si vous voulez la "qualité" de la correspondance
-        threshold: 0.3, // Définissez un seuil pour permettre les correspondances floues
-        keys: ["name"], // Si vous avez des objets, ajustez cette clé
-      });
+const villes = ref([])
+const rechercheVille = ref('')
+const selectedDate = ref(new Date().toISOString().split('T')[0])
+const selectedTime = ref(new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }))
 
-      // Effectuer la recherche
-      const result = fuse.search(ville);
+const recherche = async () => {
+    const fuse = new Fuse(villes.value, {
+        includeScore: true,
+        threshold: 0.3,
+    })
 
-      // Si un résultat a été trouvé
-      if (result.length > 0) {
-        const villeCorrecte = result[0].item;
-        window.location.href = `/etablissements/${villeCorrecte}`;
-      } else {
-        alert("Aucune ville trouvée.");
-      }
-    },
-  },
-  mounted() {
-    const link = document.querySelector("link[rel='icon']");
-    if (link) {
-      link.href = 'public/images/UberEatsPetit.png';
+    const result = fuse.search(rechercheVille.value)
+
+    const villeCorrecte = result.length > 0 ? result[0].item : rechercheVille.value
+
+    router.push({
+        path: `/etablissements/${villeCorrecte}`,
+        query: {
+            date: selectedDate.value,
+            time: selectedTime.value
+        }
+    })
+}
+
+onMounted(async () => {
+    try {
+        const data = await getVilles()
+        villes.value = data.map(ville => ville.nomVille)
+    } catch (error) {
+        console.error("Erreur de chargement des villes :", error)
     }
-    this.fetchData();
-    document.title = "Uber Eats";
-  },
-};
-</script>
 
+    const link = document.querySelector("link[rel='icon']")
+    if (link) {
+        link.href = '/public/images/UberEatsPetit.png'
+    }
+
+    document.title = "Uber Eats"
+})
+</script>
 
 <style scoped>
 .main-content {
@@ -102,9 +100,11 @@ export default {
     height: 100vh;
     width: 100%;
 }
+
 .main-content {
     padding: 50px;
 }
+
 .section-container {
     margin: 0 auto;
     max-width: 1100px;

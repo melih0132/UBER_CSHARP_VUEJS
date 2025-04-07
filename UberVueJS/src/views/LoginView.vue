@@ -2,68 +2,74 @@
   <div>
     <div class="container mt-5">
       <h1 class="text-center mb-4">Connexion</h1>
+
       <form @submit.prevent="handleLogin" class="form-login d-flex flex-column justify-content-center">
         <div class="mb-3">
           <label for="email" class="form-label">Email</label>
-          <input type="email" v-model="email" id="email" class="form-control" placeholder="Entrez votre email" required />
+          <input
+            type="email"
+            v-model="email"
+            id="email"
+            class="form-control"
+            placeholder="Entrez votre email"
+            required
+          />
         </div>
         <div class="mb-3">
           <label for="password" class="form-label">Mot de passe</label>
-          <input type="password" v-model="password" id="password" class="form-control" placeholder="Entrez votre mot de passe" required />
+          <input
+            type="password"
+            v-model="password"
+            id="password"
+            class="form-control"
+            placeholder="Entrez votre mot de passe"
+            required
+          />
         </div>
-        <button type="submit" class="btn-login" :disabled="isLoading">
+        <button class="btn-login" :disabled="isLoading">
           {{ isLoading ? "Connexion en cours..." : "Se connecter" }}
         </button>
       </form>
+
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
     </div>
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 
-export default {
-  setup() {
-    const router = useRouter();
-    const store = useUserStore();
-    const email = ref('');
-    const password = ref('');
-    const errorMessage = ref('');
-    const isLoading = ref(false);
+const router = useRouter();
+const store = useUserStore();
 
-    const handleLogin = async () => {
-      if (!email.value || !password.value) {
-        errorMessage.value = 'Veuillez remplir tous les champs';
-        return;
-      }
+const email = ref('');
+const password = ref('');
+const errorMessage = ref('');
+const isLoading = ref(false);
 
-      isLoading.value = true;
-      errorMessage.value = '';
+const handleLogin = async () => {
+  if (!email.value || !password.value) {
+    errorMessage.value = 'Veuillez remplir tous les champs';
+    return;
+  }
 
-      try {
-        await store.login({
-          email: email.value,
-          password: password.value
-        });
-        
-        console.log("is client ? " + store.isClient);
-        const redirectRoute = store.isClient 
-          ? { name: 'MyAccount' } 
-          : { path: '/login' };
-        
-        await router.push(redirectRoute);
-      } catch (error) {
-        errorMessage.value = error.response?.data || 
-          'Identifiants incorrects ou problème de connexion';
-      } finally {
-        isLoading.value = false;
-      }
-    };
+  isLoading.value = true;
+  errorMessage.value = '';
 
-    return { email, password, errorMessage, handleLogin, isLoading };
+  try {
+    await store.login({ email: email.value, password: password.value });
+
+    if (store.isClient || store.isCoursier) {
+      router.push({ name: 'MyAccount' });
+    }
+  } catch (error) {
+    errorMessage.value =
+      error.response?.data?.message ||
+      'Identifiants incorrects ou problème de connexion';
+  } finally {
+    isLoading.value = false;
   }
 };
 </script>

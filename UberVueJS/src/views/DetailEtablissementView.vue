@@ -1,4 +1,8 @@
 <template>
+  <div v-if="successMessage" class="notification">
+    <p>{{ successMessage }}</p>
+  </div>
+
   <section class="etablissement-detail">
     <div class="etablissement-banner">
       <img :src="etablissement?.imageEtablissement" alt="Image de l'établissement" />
@@ -11,28 +15,43 @@
         </h1>
         <div class="categories-section">
           <div class="categories">
-            <span v-for="(categorie, index) in etablissement.idCategoriePrestations"
-              :key="categorie.idCategoriePrestation">
+            <span
+              v-if="etablissement && etablissement.idCategoriePrestations"
+              v-for="(categorie, index) in etablissement.idCategoriePrestations"
+              :key="categorie.idCategoriePrestation"
+            >
               {{ categorie.libelleCategoriePrestation }}
               <span v-if="index < etablissement.idCategoriePrestations.length - 1">•</span>
             </span>
           </div>
         </div>
+
         <div class="etablissement-description">
           <p>{{ etablissement.description }}</p>
         </div>
         <div class="address-section">
-          <p> {{ etablissement.idAdresseNavigation.libelleAdresse }}, {{
-            etablissement.idAdresseNavigation.idVilleNavigation.nomVille }}
-            ({{ etablissement.idAdresseNavigation.idVilleNavigation.idCodePostalNavigation.cp }})</p>
+          <p>
+            {{ etablissement.idAdresseNavigation.libelleAdresse }},
+            {{
+              etablissement.idAdresseNavigation.idVilleNavigation.nomVille
+            }}
+            ({{
+              etablissement.idAdresseNavigation.idVilleNavigation
+                .idCodePostalNavigation.cp
+            }})
+          </p>
         </div>
       </div>
 
       <div class="etablissement-info">
         <div class="options-container">
           <div class="options">
-            <span :class="['option', etablissement?.livraison ? 'active' : '']">Livraison</span>
-            <span :class="['option', etablissement?.aEmporter ? 'active' : '']">À emporter</span>
+            <span :class="['option', etablissement?.livraison ? 'active' : '']"
+              >Livraison</span
+            >
+            <span :class="['option', etablissement?.aEmporter ? 'active' : '']"
+              >À emporter</span
+            >
           </div>
         </div>
         <div class="hours-section">
@@ -58,10 +77,9 @@
         <div class="product-details">
           <h5 class="product-name">{{ produit.nomProduit }}</h5>
           <h5 class="product-price">{{ formatPrice(produit.prixProduit) }} €</h5>
-          <!--           <form method="POST" action="{{ route('panier.ajouter') }}"> 
-            <input name="product" value="{{ $produit->idproduit }}" type="hidden"> -->
-          <button type="submit" @click="ajouterAuPanier(produit)" class="btn-panier">Ajouter au panier</button>
-          <!-- </form> -->
+          <button type="submit" @click="ajouterAuPanier(produit)" class="btn-panier">
+            Ajouter au panier
+          </button>
         </div>
       </div>
     </div>
@@ -69,80 +87,138 @@
 </template>
 
 <script>
-import { getEtablissementById } from "@/services/etablissementService";
+import { getEtablissementById, getHorairesByEtablissementId } from "@/services/etablissementService";
 import { getCategoriePrestations } from "@/services/categoriePrestationService";
+import { useUserStore } from '@/stores/userStore';
+import {
+  AjoutAuPanier,
+  MajQuantiteProduitPanier,
+  GetPanierById,
+} from "@/services/panierService";
 
 export default {
   data() {
     return {
       etablissement: null,
+      successMessage: "",
       categories: [],
-      horaires: []
+      horaires: [],
+      userStore: useUserStore(),
     };
   },
   async created() {
+    const idEtablissement = this.$route.params.idEtablissement;
     try {
-
-      const idEtablissement = this.$route.params.idEtablissement;
-
       this.etablissement = await getEtablissementById(idEtablissement);
+
       if (this.etablissement) {
         this.categories = await getCategoriePrestations(this.etablissement.idEtablissement);
+        document.title = this.etablissement.nomEtablissement;
       }
+
+      this.horaires = await getHorairesByEtablissementId(idEtablissement);
+      console.table(this.horaires);
     } catch (error) {
-      console.error("Erreur lors de la récupération des données", error);
+      console.error("Erreur lors de la récupération des données :", error);
     }
-    this.fetchHoraires();
   },
   methods: {
     ajouterAuPanier(produit) {
-    console.log("produit ajouté au panier");
+      try {
+        const etablissementId = this.etablissement.idEtablissement;
 
-    // Récupérer le panier actuel depuis localStorage ou initialiser un tableau vide si le panier n'existe pas
-    let panier = JSON.parse(localStorage.getItem("panier")) || [];
+        // Mise à jour du localStorage pour les utilisateurs non connectés
+        this.updateLocalStoragePanier(produit, etablissementId);
 
-    // Vérifier si le produit est déjà dans le panier
-    const indexProduit = panier.findIndex(item => item.idProduit === produit.idProduit);
+        // Mise à jour de la base de données pour les utilisateurs connectés
+        if (this.userStore.isAuthenticated && this.userStore.user) {
+          this.updateDatabasePanier(produit, etablissementId);
+        }
 
-    if (indexProduit !== -1) {
-      // Si le produit existe déjà, on met à jour la quantité
-      panier[indexProduit].quantite += 1;
-    } else {
-      // Sinon, on ajoute le produit avec une quantité de 1
-      produit.quantite = 1;
-      panier.push(produit);
-    }
+        // Afficher le message de succès
+        this.showSuccessMessage(produit.nomProduit);
+      } catch (error) {
+        console.error("Erreur lors de l'ajout au panier:", error);
+      }
+    },
+    updateLocalStoragePanier(produit, etablissementId) {
+      try {
+        let panier = JSON.parse(localStorage.getItem("panier")) || [];
 
-    // Sauvegarder à nouveau le panier dans le localStorage
-    localStorage.setItem("panier", JSON.stringify(panier));
+        const existingIndex = panier.findIndex(
+          (item) =>
+            item.idProduit === produit.idProduit &&
+            item.idEtablissement === etablissementId
+        );
 
-    // Afficher le produit ajouté au panier
-    console.log(panier);
-  },
+        if (existingIndex !== -1) {
+          panier[existingIndex].quantite += 1;
+        } else {
+          panier.push({
+            idProduit: produit.idProduit,
+            idEtablissement: etablissementId,
+            nomProduit: produit.nomProduit,
+            prixProduit: produit.prixProduit,
+            imageProduit: produit.imageProduit,
+            quantite: 1,
+          });
+        }
+
+        localStorage.setItem("panier", JSON.stringify(panier));
+      } catch (error) {
+        console.error("Erreur lors de la mise à jour du panier local:", error);
+      }
+    },
+    async updateDatabasePanier(produit, etablissementId) {
+      try {
+        const userId = this.userStore.user.userId;
+        const panierData = await GetPanierById(userId);
+
+        if (panierData && panierData.contient2s) {
+          const existingProduct = panierData.contient2s.find(
+            (item) =>
+              item.idProduit === produit.idProduit &&
+              item.idEtablissement === etablissementId
+          );
+
+          if (existingProduct) {
+            const nouvelleQuantite = existingProduct.quantite + 1;
+            await MajQuantiteProduitPanier(
+              userId,
+              produit.idProduit,
+              etablissementId,
+              nouvelleQuantite
+            );
+          } else {
+            await AjoutAuPanier(userId, produit.idProduit, etablissementId);
+          }
+        } else {
+          await AjoutAuPanier(userId, produit.idProduit, etablissementId);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la mise à jour du panier dans la base de données:", error);
+      }
+    },
+    showSuccessMessage(nomProduit) {
+      this.successMessage = `${nomProduit} ajouté au panier !`;
+      setTimeout(() => {
+        this.successMessage = "";
+      }, 3000);
+    },
     formatCodePostal(codepostal) {
-      return codepostal ? codepostal.substring(0, 2) : '';
+      return codepostal ? codepostal.substring(0, 2) : "";
     },
     formatHeure(dateString) {
       const date = new Date(dateString);
-      const heures = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      console.log(`${heures}:${minutes}`)
+      const heures = String(date.getHours()).padStart(2, "0");
+      const minutes = String(date.getMinutes()).padStart(2, "0");
       return `${heures}:${minutes}`;
     },
-    async fetchHoraires() {
-      try {
-        const idEtablissement = this.$route.params.idEtablissement;
-        const response = await fetch('https://uberapi-azure-bceagvaug7cxa8hk.francecentral-01.azurewebsites.net/api/etablissements/getById/' + idEtablissement);
-        const data = await response.json();
-
-        this.horaires = data.horaires;
-      } catch (error) {
-        console.error('Erreur lors de la récupération des horaires:', error);
-      }
-    },
-
     isClosed(horaire) {
-      return horaire.heureDebut === '0001-01-02T08:00:00+00:00' || horaire.heureFin === '0001-01-02T18:00:00+00:00';
+      return (
+        horaire.heureDebut === "0001-01-02T08:00:00+00:00" ||
+        horaire.heureFin === "0001-01-02T18:00:00+00:00"
+      );
     },
     formatTime(isoTime) {
       const date = new Date(isoTime);
@@ -153,13 +229,34 @@ export default {
     },
   },
   mounted() {
-    document.title = this.etablissement?.nomEtablissement;
-    this.fetchData();
-  }
+    const link = document.querySelector("link[rel='icon']");
+    if (link) {
+      link.href = "/public/images/UberEatsPetit.png";
+    }
+  },
 };
 </script>
 
 <style scoped>
+.notification {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  background-color: #28a745;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 16px;
+  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.notification.hide {
+  opacity: 0;
+}
+
 @font-face {
   font-family: 'Uber Move Bold';
   src: url('/fonts/UberMoveBold.otf') format('opentype');

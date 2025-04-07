@@ -29,6 +29,8 @@ export const useUserStore = defineStore('user', {
           password: credentials.password
         });
 
+        console.log(response.data);
+
         this.user = {
           token: response.data.token,
           role: response.data.role,
@@ -36,9 +38,12 @@ export const useUserStore = defineStore('user', {
           email: response.data.email
         };
 
+        console.log(this.user)
+
+        this.setAuthHeader();
+    
         await this.fetchUserData();
         localStorage.setItem('user', JSON.stringify(this.user));
-        this.setAuthHeader();
 
         return true;
       } catch (error) {
@@ -113,25 +118,20 @@ export const useUserStore = defineStore('user', {
       localStorage.removeItem('user');
     },
 
-    // register client - Melih qui nvm
+    // register client - Melih
     async register(clientData) {
       try {
         const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
         if (!emailPattern.test(clientData.emailUser)) {
-          throw new Error('Invalid email format');
+          throw new Error('Format email invalide');
         }
 
         const response = await apiClient.post('clients/register', clientData);
-
-        await this.login({
-          email: clientData.emailUser,
-          password: clientData.motDePasseUser
-        });
-
         return response.data;
+    
       } catch (error) {
-        if (error.response && error.response.data.errors) {
-          console.error("Validation errors:", error.response.data.errors);
+        if (error.response?.data?.errors) {
+          console.error("Erreurs de validation:", error.response.data.errors);
         }
         throw error;
       }

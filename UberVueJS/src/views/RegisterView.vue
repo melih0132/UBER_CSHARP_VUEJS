@@ -63,27 +63,33 @@
         <h5>Sécurité</h5>
         <div class="form-group">
           <label for="motdepasseuser">Mot de passe :</label>
-          <input type="password" v-model="client.motdepasseuser" id="motdepasseuser" class="form-control" required
-            minlength="8" placeholder="Saisissez un mot de passe sécurisé" @input="checkPasswordStrength">
+          <input type="password" v-model="client.motDePasseUser" id="motDePasseUser" class="form-control" required
+            minlength="8" placeholder="Saisissez un mot de passe sécurisé">
         </div>
         <div class="form-group">
           <label for="motdepasseuser_confirmation">Confirmation du mot de passe :</label>
-          <input type="password" v-model="passwordConfirmation" id="motdepasseuser_confirmation" class="form-control"
+          <input type="password" v-model="passwordConfirmation" id="motDePasseUser_confirmation" class="form-control"
             required placeholder="Confirmez votre mot de passe">
         </div>
       </div>
       <button type="submit" class="btn-login" :disabled="isLoading">S'inscrire</button>
     </form>
+    <div v-if="errorMessage" class="alert-message error">
+      {{ errorMessage }}
+    </div>
   </div>
 </template>
 
 <script>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { useUserStore } from "@/stores/userStore";
 
 export default {
   setup() {
     const store = useUserStore();
+    const router = useRouter();
+
     const client = ref({
       nomUser: '',
       prenomUser: '',
@@ -97,34 +103,48 @@ export default {
       motdepasseuser: '',
       typeClient: 'Uber'  // Ajout du typeClient par défaut
     });
+
     const passwordConfirmation = ref('');
     const isLoading = ref(false);
     const errorMessage = ref('');
 
-    const handleRegister = async () => {
-      if (client.value.motdepasseuser !== passwordConfirmation.value) {
+    const validateForm = () => {
+      if (client.value.motDePasseUser !== passwordConfirmation.value) {
         errorMessage.value = "Les mots de passe ne correspondent pas.";
-        return;
+        return false;
       }
 
+      if (client.value.motDePasseUser.length < 8) {
+        errorMessage.value = "Le mot de passe doit contenir au moins 8 caractères";
+        return false;
+      }
+
+      return true;
+    };
+
+    const handleRegister = async () => {
+      if (!validateForm()) return;
+
       isLoading.value = true;
+      errorMessage.value = '';
+
       try {
         await store.register(client.value);
-      } catch (error) {
-        if (error.response && error.response.data.errors) {
-          const errors = error.response.data.errors;
-          errorMessage.value = '';
 
-          if (errors.EmailUser) {
-            errorMessage.value += "Erreur sur l'email : " + errors.EmailUser.join(", ") + ". ";
-          }
-          if (errors.TypeClient) {
-            errorMessage.value += "Erreur sur le type de client : " + errors.TypeClient.join(", ") + ". ";
-          }
+        await store.login({
+          email: client.value.emailUser,
+          password: client.value.motDePasseUser
+        });
+
+        await router.push('/');
+      } catch (error) {
+        if (error.response?.data?.message === 'Cet email est déjà utilisé.') {
+          errorMessage.value = "Un compte existe déjà avec cette adresse email.";
+        } else if (error.response?.data?.errors) {
+          errorMessage.value = Object.values(error.response.data.errors).flat().join(', ');
         } else {
-          errorMessage.value = "Erreur lors de l'inscription.";
+          errorMessage.value = "Erreur lors de l'inscription: " + (error.message || 'Erreur inconnue');
         }
-        console.error(error);
       } finally {
         isLoading.value = false;
       }

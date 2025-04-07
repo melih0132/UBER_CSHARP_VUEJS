@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using UberApi.Models.EntityFramework;
 using UberApi.Models.DataManager;
+using UberApi.Models;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using UberApi.Models.Repository;
 using Microsoft.AspNetCore.Authorization;
@@ -116,25 +117,49 @@ namespace UberApi.Controllers
         [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<Client>> RegisterClientAsync(Client client)
+        public async Task<IActionResult> Register([FromBody] ClientDTO clientDto)
         {
-            if (!ModelState.IsValid)
+            if (clientDto == null)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new { message = "Données invalides." });
             }
 
-            // Vérifier si l'email est déjà utilisé
-            var existingClient = await dataRepository.GetByStringAsync(client.EmailUser);
-            if (existingClient.Value != null)
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var age = today.Year - clientDto.DateNaissance.Year;
+
+            if (clientDto.DateNaissance > today.AddYears(-age))
             {
-                return Conflict("Un compte avec cet email existe déjà.");
+                age--;
             }
 
-            // Ajouter le client en base
-            await dataRepository.AddAsync(client);
+            if (age < 18)
+            {
+                return BadRequest(new { message = "Vous devez avoir au moins 18 ans pour vous inscrire." });
+            }
 
-            return CreatedAtAction("GetById", new { id = client.IdClient }, client);
+            try
+            {
+                var newClient = new Client
+                {
+                    NomUser = clientDto.NomUser,
+                    PrenomUser = clientDto.PrenomUser,
+                    GenreUser = clientDto.GenreUser,
+                    DateNaissance = clientDto.DateNaissance,
+                    Telephone = clientDto.Telephone,
+                    EmailUser = clientDto.EmailUser,
+                    MotDePasseUser = clientDto.MotDePasseUser,
+                    TypeClient = clientDto.TypeClient
+                };
+
+                await dataRepository.AddAsync(newClient);
+
+                return CreatedAtAction(nameof(Register), new { id = newClient.IdClient }, new { message = "Inscription réussie !" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
+
     }
 }

@@ -11,6 +11,7 @@ using Moq;
 using UberApi.Models.DataManager;
 using UberApi.Models.EntityFramework;
 using UberApi.Models.Repository;
+using System.Net.Sockets;
 
 namespace UberApi.Controllers.Tests
 {
@@ -23,7 +24,7 @@ namespace UberApi.Controllers.Tests
 
         private S221UberContext _context;
         private CarteBancairesController _controller;
-        private IDataRepository<CarteBancaire> _carteBancairesRepository;
+        private ICarteBancaireRepository _carteBancairesRepository;
 
         [TestInitialize]
         public void Init()
@@ -50,7 +51,7 @@ namespace UberApi.Controllers.Tests
                 Courses= [],
                 IdClients= []
             };
-            var mockRepository = new Mock<IDataRepository<CarteBancaire>>();
+            var mockRepository = new Mock<ICarteBancaireRepository>();
             mockRepository.Setup(x => x.GetByIdAsync(1).Result).Returns(carteBancaire);
             var controller = new CarteBancairesController(mockRepository.Object);
             // Act
@@ -75,7 +76,7 @@ namespace UberApi.Controllers.Tests
                 Courses = [],
                 IdClients = []
             };
-            var mockRepository = new Mock<IDataRepository<CarteBancaire>>();
+            var mockRepository = new Mock<ICarteBancaireRepository>();
             mockRepository.Setup(x => x.GetByIdAsync(1).Result).Returns((CarteBancaire)null);
             var controller = new CarteBancairesController(mockRepository.Object);
             // Act
@@ -100,7 +101,7 @@ namespace UberApi.Controllers.Tests
                 Courses = [],
                 IdClients = []
             };
-            var mockRepository = new Mock<IDataRepository<CarteBancaire>>();
+            var mockRepository = new Mock<ICarteBancaireRepository>();
             mockRepository.Setup(x => x.GetByStringAsync(carteBancaire.NumeroCb).Result).Returns(carteBancaire);
             var controller = new CarteBancairesController(mockRepository.Object);
             // Act
@@ -126,7 +127,7 @@ namespace UberApi.Controllers.Tests
                 IdClients = []
             };
 
-            var mockRepository = new Mock<IDataRepository<CarteBancaire>>();
+            var mockRepository = new Mock<ICarteBancaireRepository>();
             mockRepository.Setup(x => x.GetByStringAsync(carteBancaire.NumeroCb).Result).Returns((CarteBancaire)null);
             var controller = new CarteBancairesController(mockRepository.Object);
             // Act
@@ -152,7 +153,7 @@ namespace UberApi.Controllers.Tests
                 IdClients = []
             };
 
-            var mockRepository = new Mock<IDataRepository<CarteBancaire>>();
+            var mockRepository = new Mock<ICarteBancaireRepository>();
 
             mockRepository.Setup(x => x.AddAsync(It.IsAny<CarteBancaire>())).Returns(Task.CompletedTask);
             mockRepository.Setup(x => x.GetByIdAsync(It.Is<int>(id => id == carteBancaire.IdCb)))
@@ -161,7 +162,8 @@ namespace UberApi.Controllers.Tests
             var controller = new CarteBancairesController(mockRepository.Object);
 
             // Act
-            var actionResult = controller.PostCarteBancaireAsync(carteBancaire).Result;
+            var idClient = 20;
+            var actionResult = controller.PostCarteBancaireAsync(carteBancaire, idClient).Result;
 
             // Assert
             Assert.IsNotNull(actionResult);
@@ -204,7 +206,7 @@ namespace UberApi.Controllers.Tests
                 IdClients = []
             };
 
-            var mockRepository = new Mock<IDataRepository<CarteBancaire>>();
+            var mockRepository = new Mock<ICarteBancaireRepository>();
 
 
             mockRepository.Setup(x => x.GetByIdAsync(carteBancaire.IdCb)).ReturnsAsync(carteBancaireUpdate);
@@ -240,7 +242,7 @@ namespace UberApi.Controllers.Tests
                 IdClients = []
             };
 
-            var mockRepository = new Mock<IDataRepository<CarteBancaire>>();
+            var mockRepository = new Mock<ICarteBancaireRepository>();
 
 
             mockRepository.Setup(x => x.GetByIdAsync(carteBancaire.IdCb))
@@ -273,7 +275,7 @@ namespace UberApi.Controllers.Tests
             // Arrange : ID inexistant
             int idCarteBancaireInvalide = 19;
 
-            var mockRepository = new Mock<IDataRepository<CarteBancaire>>();
+            var mockRepository = new Mock<ICarteBancaireRepository>();
 
             mockRepository.Setup(x => x.GetByIdAsync(idCarteBancaireInvalide))
                            .ReturnsAsync((CarteBancaire)null);  // Retourner null pour simuler que le carteBancaire n'existe pas
@@ -392,7 +394,8 @@ namespace UberApi.Controllers.Tests
             // Act
             try
             {
-                var result = _controller.PostCarteBancaireAsync(cousierATester).Result;
+                var idClient = 20;
+                var result = _controller.PostCarteBancaireAsync(cousierATester, idClient).Result;
             }
             catch (AggregateException ex)
             {
@@ -483,8 +486,8 @@ namespace UberApi.Controllers.Tests
                 Courses = [],
                 IdClients = []
             };
-
-            var result = _controller.PostCarteBancaireAsync(cousierATester).Result;
+            var idClient = 20;
+            var result = _controller.PostCarteBancaireAsync(cousierATester, idClient).Result;
 
 
             // Act : Suppression

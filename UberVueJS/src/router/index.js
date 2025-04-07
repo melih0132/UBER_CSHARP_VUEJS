@@ -3,10 +3,11 @@ import { useUserStore } from "@/stores/userStore";
 
 // Vues principales
 const HomeView = () => import("@/views/HomeView.vue");
-const RideView = () => import("@/views/RideView.vue");
+const SearchDriverView = () => import("@/views/SearchDriverView.vue");
+const Course = () => import("@/views/CourseView.vue");
+const Detail = () => import("@/views/DetailCourseView.vue");
 const LoginView = () => import("@/views/LoginView.vue");
 const RegisterView = () => import("@/views/RegisterView.vue");
-const EtablissementsView = () => import("@/views/EtablissementsView.vue");
 const EtablissementsVilleView = () => import("@/views/EtablissementsVilleView.vue");
 const DetailEtablissementView = () => import("@/views/DetailEtablissementView.vue");
 const MyAccountView = () => import("@/views/MyAccountView.vue");
@@ -14,24 +15,28 @@ const BesoinAideView = () => import("@/views/BesoinAideView.vue");
 const PanierView = () => import("@/views/PanierView.vue");
 const UberEatsView = () => import("@/views/UberEatsView.vue");
 const PrestationView = () => import("@/views/PrestationView.vue");
-
+const ChoixLivraisonView = () => import("@/views/ChoixLivraisonView.vue");
+const ChoixCarteView = () => import("@/views/ChoixCarteView.vue");
 const CommandesView = () => import("@/views/CommandesView.vue");
+const CarteBancaireView = () => import("@/views/CarteBancaireView.vue");
+
 
 const routes = [
-  // Routes publiques
   { path: "/", name: "Home", component: HomeView },
   { path: "/prestation", name: "prestation", component: PrestationView },
-  { path: "/ride", name: "Ride", component: RideView },
+  { path: "/search-driver", name: "search-driver", component: SearchDriverView },
+  { path: "/course", name: "course", component: Course },
+  { path: "/course/detail-course/:idCourse", name: "detail-course", component: Detail },
   { path: "/login", name: "Login", component: LoginView, meta: { requiresAuth: false } },
   { path: "/register", name: "Register", component: RegisterView, meta: { requiresAuth: false } },
-  { path: "/etablissements", name: "Etablissements", component: EtablissementsView },
   { path: "/etablissements/:nomVille", name: "EtablissementsParVille", component: EtablissementsVilleView },
   { path: "/etablissement/detail/:idEtablissement", name: "DetailEtablissement", component: DetailEtablissementView },
   { path: "/aide", name: "Besoin-aide", component: BesoinAideView },
-  { path: "/panier", name: "Panier", component: PanierView, meta: { requiresAuth: false } },
+  { path: "/commande/panier", name: "Panier", component: PanierView, meta: { requiresAuth: false } },
   { path: "/accueil", name: "AccueilUberEats", component: UberEatsView },
-
-  // Routes protégées
+  { path: "/commande/panier/choix-livraison", name: "Choix-livraison", component: ChoixLivraisonView},
+  { path: "/commande/panier/choix-carte", name: "Choix-carte", component: ChoixCarteView},
+  { path: "/myaccount/carte-bancaire", name: "CarteBancaire", component: CarteBancaireView},
   { 
     path: "/myaccount", 
     name: "MyAccount", 
@@ -58,21 +63,19 @@ router.beforeEach(async (to, from, next) => {
     await store.initialize();
   }
 
-  if (to.meta.requiresAuth) {
-    if (!store.isAuthenticated) {
-      return next({ 
-        name: 'Login',
-        query: { redirect: to.fullPath } 
-      });
-    }
-
-    if (to.meta.allowedRoles && !to.meta.allowedRoles.includes(store.user.role)) {
-      return next(store.isClient ? { name: 'MyAccount' } : { name: '/' });
-    }
+  if (to.meta.requiresAuth && !store.isAuthenticated) {
+    return next({ 
+      name: "Login", 
+      query: { redirect: to.fullPath }
+    });
   }
 
-  if (to.name === 'Login' && store.isAuthenticated) {
-    return next(store.isClient ? { name: 'MyAccount' } : { name: '/' });
+  if (to.meta.allowedRoles && !to.meta.allowedRoles.includes(store.user.role)) {
+    return next(store.isClient ? { name: "MyAccount" } : { name: "Home" });
+  }
+
+  if (to.name === "Login" && store.isAuthenticated) {
+    return next(store.isClient ? { name: "MyAccount" } : { name: "Home" });
   }
 
   next();

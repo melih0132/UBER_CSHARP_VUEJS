@@ -1,5 +1,5 @@
 <template>
-  <div class="container" style="min-height: 100vh; padding: 2rem; padding-right: 0;">
+  <div class="container" style="padding-bottom: 2rem; padding-top: 4rem;">
     <section>
       <div class="main-container">
         <div class="row p-4">
@@ -7,40 +7,37 @@
             <h1 class="pb-4">Commandez ou planifiez une course</h1>
 
             <div>
-              <h2 v-if="isAuthenticated">Bonjour {{ userStore.user.prenomUser }}</h2>
+              <h2 v-if="userStore.isAuthenticated">Bonjour {{ userStore.user.prenomUser }}</h2>
               <h6>Ajoutez les détails de votre course, montez à bord et c'est parti.</h6>
             </div>
 
+            <!-- Adresse départ -->
             <div class="address-input-container">
-              <label for="startAddress" class="form-label"></label>
-              <div class="input-with-dropdown">
-                <input type="text" id="startAddress" v-model="startAddress" placeholder="Adresse de départ" required
-                  @input="fetchSuggestions">
-                <!-- <ul v-if="startSuggestions.length" class="favorites-dropdown">
-                    <li v-for="(suggestion, index) in startSuggestions" :key="index"
-                      @click="selectAddress('start', suggestion)">
-                      {{ suggestion.description }}
-                    </li>
-                  </ul> -->
-              </div>
+              <input type="text" id="startAddress" v-model="startAddress" placeholder="Adresse de départ" required
+                @input="fetchSuggestions('start')" @focus="fetchSuggestions('start')">
+              <ul v-if="startSuggestions.length" class="suggestions-list">
+                <li v-for="s in startSuggestions" :key="s.place_id" @click="selectAddress('start', s)">
+                  {{ s.description }}
+                </li>
+              </ul>
+
               <small>Veuillez renseigner votre adresse complète</small>
             </div>
 
+            <!-- Adresse arrivée -->
             <div class="address-input-container">
-              <label for="endAddress" class="form-label"></label>
-              <div class="input-with-dropdown">
-                <input type="text" id="endAddress" v-model="endAddress" placeholder="Adresse d'arrivée" required
-                  @input="fetchSuggestions">
-                <!-- <ul v-if="endSuggestions.length" class="favorites-dropdown">
-                    <li v-for="(suggestion, index) in endSuggestions" :key="index"
-                      @click="selectAddress('end', suggestion)">
-                      {{ suggestion.description }}
-                    </li>
-                  </ul> -->
-              </div>
+              <input type="text" id="endAddress" v-model="endAddress" placeholder="Adresse d'arrivée" required
+                @input="fetchSuggestions('end')" @focus="fetchSuggestions('end')">
+              <ul v-if="endSuggestions.length" class="suggestions-list">
+                <li v-for="s in startSuggestions" :key="s.place_id" @click="selectAddress('start', s)">
+                  {{ s.description }}
+                </li>
+              </ul>
+
               <small>Veuillez renseigner votre adresse complète</small>
             </div>
 
+            <!-- Date et heure -->
             <div class="date-container">
               <div class="date-time-container mt-3 mr-3" @click="$refs.dateInput.showPicker()">
                 <label id="tripDateLabel" data-icon="📅" class="mr-1">
@@ -50,11 +47,10 @@
                   :min="new Date().toISOString().split('T')[0]">
               </div>
 
-              <div id="customTimePicker" class="date-time-container mt-3">
-                <label id="tripTimeLabel" data-icon="⏰" @click="showTimeDropdown = !showTimeDropdown">
+              <div id="customTimePicker" class="date-time-container mt-3" @click="showTimeDropdown = !showTimeDropdown">
+                <label id="tripTimeLabel" data-icon="⏰">
                   {{ tripTime }}
                 </label>
-                <input type="hidden" id="tripTime" name="tripTime" value="{{ old('tripTime', $tripTime ?? '') }}">
                 <ul v-if="showTimeDropdown" id="customTimeDropdown" class="dropdown-list show">
                   <li v-for="(time, index) in timeOptions" :key="index" @click="selectTime(time)">
                     {{ time }}
@@ -63,22 +59,17 @@
               </div>
             </div>
 
-
-
+            <!-- Distance et bouton -->
             <div v-if="distance" id="distanceResult" class="mt-3">
               Distance estimée : {{ distance }} km • Durée : {{ duration }}
             </div>
-
-            <router-link v-if="isAuthenticated" to="/prestation" class="mt-4">Voir les prestations</router-link>
+            <button v-if="isAuthenticated" @click="handleSubmit" class="btn btn-primary mt-4">Voir les
+              prestations</button>
             <router-link v-else to="/login" class="mt-4">Voir les prestations</router-link>
-
-            <div>
-
-            </div>
-
           </div>
+
           <div class="col-12 col-sm-6">
-            <MapView />
+            <MapView ref="mapView" />
           </div>
         </div>
       </div>
@@ -90,9 +81,10 @@
 import { useUserStore } from '@/stores/userStore';
 import MapView from '@/components/MapView.vue';
 import { mapStores } from 'pinia';
+import axios from 'axios';
+
 
 export default {
-
   components: {
     MapView
   },
@@ -108,6 +100,10 @@ export default {
       timeOptions: this.generateTimeOptions(),
       distance: null,
       duration: null,
+      debounceTimer: null,
+      isAuthenticated: false,
+      startSuggestions: [],
+      endSuggestions: [],
     };
   },
   computed: {
@@ -116,28 +112,27 @@ export default {
       const date = new Date(this.tripDate);
       return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
     },
-    formattedTripTime() {
-      const date = new Date(this.tripTime);
-      return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-    }
   },
   methods: {
-    async handleAddressInput(type) {
-      const input = type === 'start' ? this.startAddress : this.endAddress;
+    async fetchSuggestions(type, input) {
       if (input.length < 3) return;
 
       try {
-        // API A REVOIR
-        const response = await this.$axios.get('/api/autocomplete', {
-          params: { input }
-        });
-        if (type === 'start') {
-          this.startSuggestions = response.data.predictions;
+        const response = await fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=TA_CLE_API&language=fr&components=country:fr`);
+        const data = await response.json();
+
+        if (data.status === 'OK') {
+          const suggestions = data.predictions;
+          if (type === 'start') {
+            this.startSuggestions = suggestions;
+          } else {
+            this.endSuggestions = suggestions;
+          }
         } else {
-          this.endSuggestions = response.data.predictions;
+          console.error('Erreur API Google:', data.status, data.error_message);
         }
       } catch (error) {
-        console.error('Autocomplete error:', error);
+        console.error('Erreur de récupération des suggestions :', error);
       }
     },
 
@@ -162,8 +157,16 @@ export default {
       return options;
     },
 
+    getNextHalfHour() {
+      const now = new Date();
+      const minutes = now.getMinutes();
+      const halfHour = minutes < 30 ? 30 : 60;
+      now.setMinutes(halfHour, 0, 0);
+      return now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    },
+
     selectTime(time) {
-      this.tripTime = time;
+      this.tripTime = time === 'Maintenant' ? this.getNextHalfHour() : time;
       this.showTimeDropdown = false;
     },
 
@@ -171,97 +174,34 @@ export default {
       if (!this.startAddress || !this.endAddress) return;
 
       try {
-        const response = await this.$axios.post('/api/calculate-route', {
+        const response = await axios.post('/api/calculate-route', {
           start: this.startAddress,
           end: this.endAddress
         });
 
         this.distance = (response.data.distance / 1000).toFixed(1);
         this.duration = response.data.duration;
+
+        this.$refs.mapView.drawRoute(response.data.polyline);
       } catch (error) {
         console.error('Route calculation error:', error);
-      }
-      // Fonction pour obtenir des suggestions d'adresses avec debounce
-      async function fetchSuggestions(inputElement, suggestionsListId) {
-        const query = inputElement.value.trim();
-        const suggestionsList = document.getElementById(suggestionsListId);
-
-        // Effacer les suggestions précédentes
-        suggestionsList.innerHTML = "";
-
-        if (query.length < 2) return; // Commencer la recherche seulement après avoir saisi 2 caractères
-
-        // Debounce to limit API calls
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(async () => {
-          try {
-            const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-              query,
-            )}&format=json&addressdetails=1&countrycodes=fr`;
-            const response = await axios.get(url);
-            const results = response.data;
-
-            // Ajouter les suggestions à la liste
-            results.forEach((result) => {
-              const address = result.address;
-
-              // Extraire les données pour un format correct
-              const houseNumber = address.house_number || ""; // Numéro de maison
-              const road = address.road || ""; // Rue
-              const cityDistrict = address.city_district || ""; // Quartier/Arrondissement
-              const suburb = address.suburb || ""; // Banlieue
-              const town = address.town || ""; // Ville (plus petite)
-              const village = address.village || ""; // Village
-              const city = address.city || ""; // Ville principale
-              const postcode = address.postcode || ""; // Code postal
-
-              // Déterminer l'adresse la plus détaillée
-              const detailedCity = cityDistrict || suburb || town || village || city;
-
-              const formattedAddress = [
-                houseNumber, // Numéro de maison
-                road, // Rue
-                detailedCity, // Nom détaillé de la localité
-                postcode, // Code postal
-              ]
-                .filter((part) => part) // Supprimer les parties vides
-                .join(", ");
-
-              if (formattedAddress) {
-                const li = document.createElement("li");
-                li.textContent = formattedAddress;
-                li.classList.add("suggestion-item"); // Ajouter une classe pour le style
-
-                // Gestion de la sélection de l'adresse
-                li.addEventListener("click", () => {
-                  inputElement.value = formattedAddress; // Insérer l'adresse sélectionnée dans le champ
-                  suggestionsList.innerHTML = ""; // Effacer la liste des suggestions
-
-                  const lat = parseFloat(result.lat); // Latitude
-                  const lon = parseFloat(result.lon); // Longitude
-
-                  if (inputElement.id === "startAddress") {
-                    setStartMarker(lat, lon, formattedAddress);
-                  } else if (inputElement.id === "endAddress") {
-                    setEndMarker(lat, lon, formattedAddress);
-                  }
-                });
-
-                suggestionsList.appendChild(li);
-              }
-            });
-          } catch (error) {
-            console.error("Erreur lors de la récupération des adresses:", error);
-          }
-        }, 300); // Adjust the debounce delay as needed
       }
     },
 
     handleSubmit() {
-      if (!this.isAuthenticated) return;
+      if (!this.startAddress || !this.endAddress || !this.tripDate || !this.tripTime) {
+        alert("Veuillez remplir tous les champs !");
+        return;
+      }
+
+      this.selectTime(this.getNextHalfHour());
+
+      console.log('Départ :', this.startAddress);
+      console.log('Arrivée :', this.endAddress);
+      console.log('Distance :', this.distance, 'km');
 
       this.$router.push({
-        path: '/prestations',
+        path: '/prestation',
         query: {
           start: this.startAddress,
           end: this.endAddress,
@@ -278,10 +218,11 @@ export default {
   },
   mounted() {
     this.checkAuth();
-    this.calculateRoute();
   }
 };
 </script>
+
+
 
 <style scoped>
 #map {

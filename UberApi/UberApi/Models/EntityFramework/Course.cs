@@ -17,7 +17,7 @@ public partial class Course
     public int? IdCoursier { get; set; }
 
     [Column("cb_id")]
-    public int IdCb { get; set; }
+    public int? IdCb { get; set; }
 
     [Column("adr_id")]
     public int IdAdresse { get; set; }
@@ -66,15 +66,15 @@ public partial class Course
 
     [ForeignKey("AdrIdAdresse")]
     [InverseProperty("CourseAdrIdAdresseNavigations")]
-    public virtual Adresse AdrIdAdresseNavigation { get; set; } = null!;
+    public virtual Adresse? AdrIdAdresseNavigation { get; set; } = null!;
 
     [ForeignKey("IdAdresse")]
     [InverseProperty("CourseIdAdresseNavigations")]
-    public virtual Adresse IdAdresseNavigation { get; set; } = null!;
+    public virtual Adresse? IdAdresseNavigation { get; set; } = null!;
 
     [ForeignKey("IdCb")]
     [InverseProperty("Courses")]
-    public virtual CarteBancaire IdCbNavigation { get; set; } = null!;
+    public virtual CarteBancaire? IdCbNavigation { get; set; } = null!;
 
     [ForeignKey("IdCoursier")]
     [InverseProperty("Courses")]
@@ -82,9 +82,9 @@ public partial class Course
 
     [ForeignKey("IdPrestation")]
     [InverseProperty("Courses")]
-    public virtual TypePrestation IdPrestationNavigation { get; set; } = null!;
+    public virtual TypePrestation? IdPrestationNavigation { get; set; } = null!;
 
     [ForeignKey("IdReservation")]
     [InverseProperty("Courses")]
-    public virtual Reservation IdReservationNavigation { get; set; } = null!;
+    public virtual Reservation? IdReservationNavigation { get; set; } = null!;
 }

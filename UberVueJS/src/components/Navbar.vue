@@ -1,51 +1,55 @@
 <template>
   <nav class="navbar-uber">
     <ul class="ul-links">
-      <li class="pr-1">
-        <RouterLink to="/" class="header-logo" aria-label="Accueil">
+      <li v-if="!isCoursier" class="pr-1">
+        <router-link to="/" class="header-logo" aria-label="Accueil">
           <img class="logo-png" src="/public/images/Uber.png" alt="Logo Uber">
-        </RouterLink>
+        </router-link>
       </li>
-      <li class="pr-1">
-        <RouterLink to="/" class="header-links" aria-label="Déplacez-vous avec Uber">
+      <li v-else class="pr-1">
+        <div class="header-logo">
+          <img class="logo-png" src="/public/images/Uber.png" alt="Logo Uber">
+        </div>
+      </li>
+      <li v-if="!isCoursier" class="pr-1">
+        <router-link to="/" class="header-links" aria-label="Déplacez-vous avec Uber">
           Déplacez-vous avec Uber
-        </RouterLink>
+        </router-link>
       </li>
-      <li class="pr-1">
-        <RouterLink to="/accueil" class="header-links" aria-label="Uber Eats">
+      <li v-if="!isCoursier" class="pr-1">
+        <router-link to="/accueil" class="header-links" aria-label="Uber Eats">
           Uber&nbsp;Eats
-        </RouterLink>
+        </router-link>
       </li>
-      <!-- <li class="pr-1">
-        <RouterLink to="/velo" class="header-links" aria-label="Uber Velo">
-          Uber&nbsp;Velo
-        </RouterLink>
-      </li> -->
-      <li class="pr-1">
-        <RouterLink to="/aide" class="header-links" aria-label="Besoin d'aide">
+      <li v-if="isCoursier" class="pr-1">
+        <router-link to="/course" class="header-links" aria-label="Besoin d'aide">
+          Courses
+        </router-link>
+      </li>
+      <li v-if="!isCoursier" class="pr-1">
+        <router-link to="/aide" class="header-links" aria-label="Besoin d'aide">
           Besoin&nbsp;d'aide ?
-        </RouterLink>
+        </router-link>
       </li>
     </ul>
     <ul class="ul-link-login d-flex align-items-center">
+      <li>
+        <router-link to="/commande/panier" class="a-panier" aria-label="Panier">
+          <i class="fas fa-shopping-cart panier"></i>
+        </router-link>
+      </li>
       <li v-if="isAuthenticated" class="pr-1">
-        <RouterLink to="/myaccount" class="a-login" aria-label="Mon Compte">Mon Compte</RouterLink>
+        <router-link to="/myaccount" class="a-login" aria-label="Mon Compte">Mon Compte</router-link>
       </li>
       <li v-if="isAuthenticated" class="pr-1">
         <a @click="logout" class="a-register" aria-label="Se déconnecter">Se déconnecter</a>
       </li>
       <li v-if="!isAuthenticated" class="pr-1">
-        <RouterLink to="/login" class="a-login" aria-label="Connexion">Connexion</RouterLink>
+        <router-link to="/login" class="a-login" aria-label="Connexion">Connexion</router-link>
       </li>
       <li v-if="!isAuthenticated" class="pr-1">
-        <RouterLink to="/register" class="a-register" aria-label="Inscription">Inscription</RouterLink>
+        <router-link to="/register" class="a-register" aria-label="Inscription">Inscription</router-link>
       </li>
-      <li>
-        <RouterLink to="/panier" class="a-panier" aria-label="Panier">
-          <i class="fas fa-shopping-cart panier"></i>
-        </RouterLink>
-      </li>
-
     </ul>
   </nav>
 </template>
@@ -58,6 +62,8 @@ export default {
   setup() {
     const userStore = useUserStore()
     const isAuthenticated = computed(() => userStore.isAuthenticated)
+    const isClient = computed(() => userStore.isClient)
+    const isCoursier = computed(() => userStore.isCoursier)
 
     const logout = () => {
       userStore.logout()
@@ -65,12 +71,14 @@ export default {
 
     return {
       isAuthenticated,
+      isClient,
+      isCoursier,
       logout,
+      user: userStore.currentUser
     }
   }
 }
 </script>
-
 
 <style scoped>
 .pr-2 {
@@ -182,9 +190,5 @@ export default {
 
 .a-panier i {
   color: white;
-}
-
-.a-panier:hover {
-  background-color: rgba(255, 255, 255, 0.2);
 }
 </style>

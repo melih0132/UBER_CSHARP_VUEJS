@@ -6,69 +6,66 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using UberApi.Models.EntityFramework;
-using UberApi.Models.DataManager;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using UberApi.Models.Repository;
 
 namespace UberApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CarteBancairesController : ControllerBase
+    public class CoursesController : Controller
     {
-        private readonly ICarteBancaireRepository dataRepository;
+        private readonly ICourseRepository dataRepository;
 
-
-        public CarteBancairesController(ICarteBancaireRepository dataRepo)
+        public CoursesController(ICourseRepository dataRepo)
         {
             dataRepository = dataRepo;
         }
 
+
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CarteBancaire>>> GetCarteBancairesAsync()
+        public async Task<ActionResult<IEnumerable<Course>>> GetCoursesAsync()
         {
             return await dataRepository.GetAllAsync();
         }
+
+
 
         [HttpGet]
         [Route("[action]/{id}")]
         [ActionName("GetById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<CarteBancaire>> GetCarteBancaireAsync(int id)
+        public async Task<ActionResult<Course>> GetCourseAsync(int id)
         {
-            var carteBancaire = await dataRepository.GetByIdAsync(id);
+            var course = await dataRepository.GetByIdAsync(id);
 
-            if (carteBancaire.Value == null)
+            if (course.Value == null)
             {
                 return NotFound();
             }
-            return carteBancaire;
+            return course;
 
         }
+
 
         [HttpGet]
-        [Route("[action]/{numeroCb}")]
-        [ActionName("GetByLibelleCarteBancaire")]
+        [Route("[action]/{statut}")]
+        [ActionName("GetByStatut")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<CarteBancaire>> GetCBByNumeroCbCarteBancaireAsync(string numeroCb)
+        public async Task<ActionResult<IEnumerable<Course>>> GetByStatut(string statut)
         {
-            var carteBancaire = await dataRepository.GetByStringAsync(numeroCb);
-            if (carteBancaire.Value == null)
-            {
-                return NotFound();
-            }
-            return carteBancaire;
+            return await dataRepository.GetByStringStatutCourseAsync(statut);
         }
+
 
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> PutCarteBancaireAsync(int id, CarteBancaire carteBancaire)
+        public async Task<IActionResult> PutCourseAsync(int id, Course course)
         {
-            if (id != carteBancaire.IdCb)
+            if (id != course.IdCourse)
             {
                 return BadRequest();
             }
@@ -79,7 +76,7 @@ namespace UberApi.Controllers
             }
             else
             {
-                await dataRepository.UpdateAsync(userToUpdate.Value, carteBancaire);
+                await dataRepository.UpdateAsync(userToUpdate.Value, course);
                 return NoContent();
             }
         }
@@ -88,40 +85,29 @@ namespace UberApi.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<CarteBancaire>> PostCarteBancaireAsync(CarteBancaire carteBancaire, int clientId)
+        public async Task<ActionResult<Course>> PostCourseAsync(Course course)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-
-            try
-            {
-                await dataRepository.AddClientsCBAsync(carteBancaire, clientId);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-
-            return CreatedAtAction("GetById", new { id = carteBancaire.IdCb }, carteBancaire);
+            await dataRepository.AddAsync(course);
+            return CreatedAtAction("GetById", new { id = course.IdCourse }, course); // GetById : nom de l’action
         }
 
 
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeleteCarteBancaireAsync(int id)
+        public async Task<IActionResult> DeleteCourseAsync(int id)
         {
-            var carteBancaire = await dataRepository.GetByIdAsync(id);
-
-            if (carteBancaire.Value == null)
+            var course = await dataRepository.GetByIdAsync(id);
+            if (course.Value == null)
             {
                 return NotFound();
 
             }
-
-            await dataRepository.DeleteAsync(carteBancaire.Value);
+            await dataRepository.DeleteAsync(course.Value);
             return NoContent();
         }
     }

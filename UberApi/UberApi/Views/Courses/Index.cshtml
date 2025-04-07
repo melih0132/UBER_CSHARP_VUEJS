@@ -1,0 +1,119 @@
+﻿@model IEnumerable<UberApi.Models.EntityFramework.Course>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.DateCourse)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.HeureCourse)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PrixCourse)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StatutCourse)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NoteCourse)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CommentaireCourse)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Pourboire)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Distance)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Temps)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AdrIdAdresseNavigation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdAdresseNavigation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdCbNavigation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdCoursierNavigation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdPrestationNavigation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdReservationNavigation)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateCourse)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.HeureCourse)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PrixCourse)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StatutCourse)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NoteCourse)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CommentaireCourse)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Pourboire)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Distance)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Temps)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AdrIdAdresseNavigation.IdAdresse)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdAdresseNavigation.IdAdresse)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdCbNavigation.IdCb)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdCoursierNavigation.IdCoursier)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdPrestationNavigation.IdPrestation)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdReservationNavigation.IdReservation)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.IdCourse">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.IdCourse">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.IdCourse">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

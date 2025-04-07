@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using UberApi.Models.EntityFramework;
 using UberApi.Models.Repository;
 using BCrypt.Net;
+using System.Collections.Generic;
 
 namespace UberApi.Models.DataManager
 {
@@ -21,25 +22,15 @@ namespace UberApi.Models.DataManager
         {
             return await s221UberContext.Clients
                 .Include(c => c.Factures)
-                    .ThenInclude(f => f.IdPaysNavigation)
-                        .ThenInclude(p => p.Villes)
                 .Include(c => c.IdAdresseNavigation)
                     .ThenInclude(a => a.IdVilleNavigation)
                         .ThenInclude(v => v.IdPaysNavigation)
                 .Include(c => c.IdEntrepriseNavigation)
                 .Include(c => c.LieuFavoris)
-                    .ThenInclude(l => l.IdAdresseNavigation)
-                        .ThenInclude(a => a.IdVilleNavigation)
                 .Include(c => c.Otps)
                 .Include(c => c.Paniers)
-                    .ThenInclude(p => p.Commandes)
-                        .ThenInclude(co => co.Factures)
                 .Include(c => c.Reservations)
-                    .ThenInclude(r => r.Courses)
-                        .ThenInclude(co => co.IdCbNavigation)
                 .Include(c => c.IdCbs)
-                    .ThenInclude(cb => cb.Courses)
-                        .ThenInclude(co => co.IdCoursierNavigation)
                 .ToListAsync();
         }
 
@@ -47,25 +38,15 @@ namespace UberApi.Models.DataManager
         {
             return await s221UberContext.Clients
                 .Include(c => c.Factures)
-                    .ThenInclude(f => f.IdPaysNavigation)
-                        .ThenInclude(p => p.Villes)
                 .Include(c => c.IdAdresseNavigation)
                     .ThenInclude(a => a.IdVilleNavigation)
                         .ThenInclude(v => v.IdPaysNavigation)
                 .Include(c => c.IdEntrepriseNavigation)
                 .Include(c => c.LieuFavoris)
-                    .ThenInclude(l => l.IdAdresseNavigation)
-                        .ThenInclude(a => a.IdVilleNavigation)
                 .Include(c => c.Otps)
                 .Include(c => c.Paniers)
-                    .ThenInclude(p => p.Commandes)
-                        .ThenInclude(co => co.Factures)
                 .Include(c => c.Reservations)
-                    .ThenInclude(r => r.Courses)
-                        .ThenInclude(co => co.IdCbNavigation)
                 .Include(c => c.IdCbs)
-                    .ThenInclude(cb => cb.Courses)
-                        .ThenInclude(co => co.IdCoursierNavigation)
                 .FirstOrDefaultAsync(u => u.IdClient == id);
         }
 
@@ -87,6 +68,7 @@ namespace UberApi.Models.DataManager
             var existingClient = await s221UberContext.Clients
                 .FirstOrDefaultAsync(u => u.EmailUser.ToUpper() == entity.EmailUser.ToUpper());
 
+
             if (existingClient != null)
             {
                 throw new Exception("Cet email est déjà utilisé.");
@@ -97,6 +79,13 @@ namespace UberApi.Models.DataManager
 
             // Ajout à la base de données
             await s221UberContext.Clients.AddAsync(entity);
+            await s221UberContext.SaveChangesAsync();
+
+            var entityClient = await s221UberContext.Clients.FirstOrDefaultAsync(u => u.EmailUser.ToUpper() == entity.EmailUser.ToUpper());
+
+            await s221UberContext.Database.ExecuteSqlRawAsync(
+            "INSERT INTO public.t_e_panier_pnr(pnr_id, clt_id, pnr_prix) VALUES({0},{1},{2})",
+            entityClient.IdClient, entity.IdClient, 0);
             await s221UberContext.SaveChangesAsync();
         }
 

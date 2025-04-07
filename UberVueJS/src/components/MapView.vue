@@ -1,6 +1,6 @@
 <template>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css">
-  <div id="map"></div>
+  <div id="map" style="height: 400px;"></div>
 </template>
 
 <script>
@@ -8,6 +8,7 @@ import '@/assets/leaflet.js';
 import { useRideStore } from "@/stores/rideStore";
 import { useUserStore } from "@/stores/userStore";
 import { defineComponent, onMounted, ref } from "vue";
+import L from "leaflet";
 
 export default defineComponent({
   name: "MapView",
@@ -16,6 +17,7 @@ export default defineComponent({
     const userStore = useUserStore();
     const map = ref(null);
     const userMarker = ref(null);
+    const routeLayer = ref(null);
 
     const initMap = () => {
       if (map.value) return;
@@ -54,29 +56,32 @@ export default defineComponent({
             maximumAge: 0,
           }
         );
-      } else {
-        console.error("La géolocalisation n'est pas supportée par ce navigateur.");
       }
     };
 
-    const requestRide = () => {
-      const { lat, lng } = userStore.position;
-      if (lat && lng) {
-        rideStore.requestRide({ lat, lng });
-        alert("Demande envoyée !");
-      } else {
-        alert("Position non disponible !");
+    const drawRoute = (encodedPolyline) => {
+      if (!map.value) return;
+
+      if (routeLayer.value) {
+        map.value.removeLayer(routeLayer.value);
       }
+
+      const points = L.Polyline.fromEncoded(encodedPolyline).getLatLngs();
+
+      routeLayer.value = L.polyline(points, { color: 'blue' }).addTo(map.value);
+      map.value.fitBounds(routeLayer.value.getBounds());
     };
 
     onMounted(() => {
       initMap();
     });
 
-    return { requestRide };
-  },
+    return { drawRoute };
+  }
 });
 </script>
+
+
 
 <style scoped>
 #map {
