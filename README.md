@@ -1,4 +1,4 @@
-# UBER AVEC API CORE & VUE JS - in development
+# UBER AVEC API CORE & VUE JS - Full Stack
 
 ## Overview
 This project integrates Uber's API with Vue.js to create a user-friendly ride-sharing application.
@@ -63,14 +63,17 @@ Directory structure:
     │   │   │   ├── ClientsController.cs
     │   │   │   ├── CodesPostauxController.cs
     │   │   │   ├── CommandesController.cs
+    │   │   │   ├── CoursesController.cs
     │   │   │   ├── CoursiersController.cs
     │   │   │   ├── EntreprisesController.cs
     │   │   │   ├── EntretiensController.cs
     │   │   │   ├── EtablissementController.cs
+    │   │   │   ├── EtablissementsController.cs
     │   │   │   ├── FacturesController.cs
     │   │   │   ├── LieuxFavorisController.cs
     │   │   │   ├── LivreursController.cs
     │   │   │   ├── LoginController.cs
+    │   │   │   ├── PaniersController.cs
     │   │   │   ├── PaysController.cs
     │   │   │   ├── ProduitsController.cs
     │   │   │   ├── RestaurateursController.cs
@@ -93,6 +96,7 @@ Directory structure:
     │   │   │   │   ├── ClientManager.cs
     │   │   │   │   ├── CodePostalManager.cs
     │   │   │   │   ├── CommandeManager.cs
+    │   │   │   │   ├── CourseManager.cs
     │   │   │   │   ├── CoursierManager.cs
     │   │   │   │   ├── EntrepriseManager.cs
     │   │   │   │   ├── EntretienManager.cs
@@ -100,6 +104,7 @@ Directory structure:
     │   │   │   │   ├── FactureManager.cs
     │   │   │   │   ├── LieuFavoriManager.cs
     │   │   │   │   ├── LivreurManager.cs
+    │   │   │   │   ├── PanierManager.cs
     │   │   │   │   ├── PaysManager.cs
     │   │   │   │   ├── ProduitManager.cs
     │   │   │   │   ├── RestaurateurManager.cs
@@ -140,7 +145,10 @@ Directory structure:
     │   │   │   │   ├── VeloReservation.cs
     │   │   │   │   └── Ville.cs
     │   │   │   └── Repository/
-    │   │   │       └── IDataRepository.cs
+    │   │   │       ├── ICarteBancaireRepository.cs
+    │   │   │       ├── ICourseRepository.cs
+    │   │   │       ├── IDataRepository.cs
+    │   │   │       └── IPanierRepository.cs
     │   │   ├── Properties/
     │   │   │   └── launchSettings.json
     │   │   └── Views/
@@ -151,6 +159,12 @@ Directory structure:
     │   │       │   ├── Edit.cshtml
     │   │       │   └── Index.cshtml
     │   │       ├── Commandes/
+    │   │       │   ├── Create.cshtml
+    │   │       │   ├── Delete.cshtml
+    │   │       │   ├── Details.cshtml
+    │   │       │   ├── Edit.cshtml
+    │   │       │   └── Index.cshtml
+    │   │       ├── Courses/
     │   │       │   ├── Create.cshtml
     │   │       │   ├── Delete.cshtml
     │   │       │   ├── Details.cshtml
@@ -188,8 +202,15 @@ Directory structure:
     │           ├── AdressesControllerTests.cs
     │           ├── CarteBancairesControllerTests.cs
     │           ├── CategoriePrestationsControllerTests.cs
+    │           ├── ClientsControllerTests.cs
+    │           ├── CommandesControllerTests.cs
+    │           ├── CoursesControllerTests.cs
     │           ├── CoursiersControllerTests.cs
-    │           └── EntreprisesControllerTests.cs
+    │           ├── EntreprisesControllerTests.cs
+    │           ├── EtablissementsControllerTests.cs
+    │           ├── ProduitsControllerTests.cs
+    │           ├── TypePrestationsControllerTests.cs
+    │           └── VillesControllerTests.cs
     └── UberVueJS/
         ├── README.md
         ├── index.html
@@ -215,35 +236,44 @@ Directory structure:
         │   ├── router/
         │   │   └── index.js
         │   ├── services/
+        │   │   ├── adresseService.js
+        │   │   ├── carteBancaireService.js
         │   │   ├── categoriePrestationService.js
         │   │   ├── clientService.js
         │   │   ├── commandeService.js
+        │   │   ├── courseService.js
+        │   │   ├── coursierService.js
         │   │   ├── etablissementService.js
+        │   │   ├── panierService.js
         │   │   ├── produitService.js
-        │   │   └── typePrestationServices.js
+        │   │   ├── typePrestationServices.js
+        │   │   └── villesService.js
         │   ├── stores/
         │   │   ├── counter.js
         │   │   ├── rideStore.js
         │   │   └── userStore.js
         │   └── views/
-        │       ├── AboutView.vue
         │       ├── BesoinAideView.vue
+        │       ├── CarteBancaireView.vue
+        │       ├── ChoixCarteView.vue
+        │       ├── ChoixLivraisonView.vue
         │       ├── CommandesView.vue
+        │       ├── CourseView.vue
+        │       ├── DetailCourseView.vue
         │       ├── DetailEtablissementView.vue
-        │       ├── EtablissementsView.vue
         │       ├── EtablissementsVilleView.vue
+        │       ├── ForgotPasswordView.vue
         │       ├── HomeView.vue
-        │       ├── HomeView_backup.vue
         │       ├── LoginView.vue
         │       ├── MyAccountView.vue
         │       ├── PanierView.vue
-        │       ├── PaymentView.vue
         │       ├── PrestationView.vue
         │       ├── RegisterView.vue
-        │       ├── RideView.vue
+        │       ├── SearchDriverView.vue
         │       └── UberEatsView.vue
-        └── .vscode/
-            └── extensions.json
+        └── tests/
+            └── tests.test.js
+
 ```
 
 ### Issues and Pull Requests
