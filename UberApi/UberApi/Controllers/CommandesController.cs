@@ -68,56 +68,5 @@ namespace UberApi.Controllers
         }
 
 
-        [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> PutCommandeAsync(int id, Commande commande)
-        {
-            if (id != commande.IdCommande)
-            {
-                return BadRequest();
-            }
-            var userToUpdate = await dataRepository.GetByIdAsync(id);
-            if (userToUpdate.Value == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                await dataRepository.UpdateAsync(userToUpdate.Value, commande);
-                return NoContent();
-            }
-        }
-
-
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<Commande>> PostCommandeAsync(Commande commande)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            await dataRepository.AddAsync(commande);
-            return CreatedAtAction("GetById", new { id = commande.IdCommande }, commande); // GetById : nom de l’action
-        }
-
-
-        [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeleteCommandeAsync(int id)
-        {
-            var commande = await dataRepository.GetByIdAsync(id);
-            if (commande.Value == null)
-            {
-                return NotFound();
-
-            }
-            await dataRepository.DeleteAsync(commande.Value);
-            return NoContent();
-        }
     }
 }

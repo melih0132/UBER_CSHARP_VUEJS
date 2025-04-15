@@ -6,31 +6,21 @@
       <form @submit.prevent="handleLogin" class="form-login d-flex flex-column justify-content-center">
         <div class="mb-3">
           <label for="email" class="form-label">Email</label>
-          <input
-            type="email"
-            v-model="email"
-            id="email"
-            class="form-control"
-            placeholder="Entrez votre email"
-            required
-          />
+          <input type="email" v-model="email" id="email" class="form-control" placeholder="Entrez votre email"
+            required />
         </div>
         <div class="mb-3">
           <label for="password" class="form-label">Mot de passe</label>
-          <input
-            type="password"
-            v-model="password"
-            id="password"
-            class="form-control"
-            placeholder="Entrez votre mot de passe"
-            required
-          />
+          <input type="password" v-model="password" id="password" class="form-control"
+            placeholder="Entrez votre mot de passe" required />
         </div>
         <button class="btn-login" :disabled="isLoading">
           {{ isLoading ? "Connexion en cours..." : "Se connecter" }}
         </button>
       </form>
-
+      <div class="text-center mt-3">
+        <router-link to="/forgot-password" class="link-forgot">Mot de passe oublié ?</router-link>
+      </div>
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
     </div>
   </div>
@@ -121,6 +111,17 @@ input {
 .btn-login:disabled {
   background: #ccc;
   cursor: not-allowed;
+}
+
+.link-forgot {
+  color: #8d8d8d;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.link-forgot:hover {
+  color: #cecece;
+  text-decoration: none;
 }
 
 .error-message {

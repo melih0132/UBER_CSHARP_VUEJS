@@ -4,24 +4,28 @@ import HomeContent from '@/components/HomeContent.vue';
 import { getTypePrestations } from '@/services/typePrestationServices';
 import { getAdresseByLibelleAdresse } from '@/services/adresseService';
 import { useRideStore } from "@/stores/rideStore";
-import axios from "axios";
 import { useRoute, useRouter } from 'vue-router';
+
 
 const typePrestations = ref([]);
 const adresse1 = ref([]);
 const adresse2 = ref([]);
 const route = useRoute();
 const router = useRouter();
-const rideStore = useRideStore(); // Stocker le store pour éviter de l'appeler plusieurs fois
+const rideStore = useRideStore(); 
 
 const startAddress = ref(route.query.start || 'Non spécifié');
 const endAddress = ref(route.query.end || 'Non spécifié');
 const tripDate = ref(route.query.date || new Date().toISOString().split('T')[0]);
 const tripTime = ref(route.query.time || 'Maintenant');
+const tripLength = ref(route.query.length);
+const tripDuration = ref(route.query.duration);
+
 const isLoading = ref(true);
 const errorMessage = ref("");
 
 onMounted(async () => {
+  
   const { start, end, date, time } = route.query;
 
   if (!start || !end || !date || !time) {
@@ -44,10 +48,55 @@ onMounted(async () => {
     isLoading.value = false;
   }
 });
-
 const prestationMessage = computed(() => {
-  return `Pour une course le ${tripDate.value} à ${tripTime.value}, de ${startAddress.value} à ${endAddress.value}`;
+  const formattedDate = new Date(tripDate.value).toLocaleDateString('fr-FR', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  });
+  const formattedTime = new Date(`${tripDate.value}T${tripTime.value}`).toLocaleTimeString('fr-FR', {
+    hour: '2-digit', minute: '2-digit'
+  });
+  const removePostalCode = (address) => {
+    return address.replace(/\d{5}/g, '').replace(/,\s*$/, '').trim(); 
+  };
+  const formattedStartAddress = removePostalCode(startAddress.value);
+  const formattedEndAddress = removePostalCode(endAddress.value);
+  return `Pour une course le ${formattedDate} à ${formattedTime} <br/>de ${formattedStartAddress} <br/>à ${formattedEndAddress}`;
 });
+
+
+
+
+const calculatePrice = (idPrestation) => {
+  let coefficient = 1;
+  switch (idPrestation) {
+    case 1: 
+      coefficient = 1.35;
+      break;
+    case 2: 
+      coefficient = 1.5;
+      break;
+    case 3: 
+      coefficient = 1.75;
+      break;
+    case 4: 
+      coefficient = 1.6;
+      break;
+    case 5: 
+      coefficient = 1.4;
+      break;
+    case 6: 
+      coefficient = 1.45;
+      break;
+    case 7: 
+      coefficient = 1.8;
+      break;
+    default:
+      coefficient = 1; 
+      break;
+  }
+
+  return (tripLength.value * coefficient).toFixed(2);
+};
 
 const validerPrestation = async (prestation) => { 
   console.log("🚗 Réservation semi-confirmée :", prestation);
@@ -55,50 +104,48 @@ const validerPrestation = async (prestation) => {
   try {
     await rideStore.NewAdresses({
       idCoursier: null,  
-          idVille: 15, 
-          libelleAdresse: startAddress.value,
-          latitude: "50.6185789",  
-          longitude: "3.0638805",  
-          clients: [],  
-          courseAdrIdAdresseNavigations: [],  
-          courseIdAdresseNavigations: [],  
-          coursiers: [],  
-          entreprises: [],  
-          etablissements: [],  
-          idVilleNavigation: null,  
-          lieuFavoris: [],  
-          velos: [], 
+      idVille: 15, 
+      libelleAdresse: startAddress.value,
+      latitude: "50.6185789",  
+      longitude: "3.0638805",  
+      clients: [],  
+      courseAdrIdAdresseNavigations: [],  
+      courseIdAdresseNavigations: [],  
+      coursiers: [],  
+      entreprises: [],  
+      etablissements: [],  
+      idVilleNavigation: null,  
+      lieuFavoris: [],  
+      velos: [], 
     });
 
     await rideStore.NewAdresses({
       idCoursier: null,  
-          idVille: 15, 
-          libelleAdresse: endAddress.value,  
-          latitude: "50.6185789",  
-          longitude: "3.0638805",  
-          clients: [],  
-          courseAdrIdAdresseNavigations: [],  
-          courseIdAdresseNavigations: [],  
-          coursiers: [],  
-          entreprises: [],  
-          etablissements: [],  
-          idVilleNavigation: null,  
-          lieuFavoris: [],  
-          velos: [], 
+      idVille: 15, 
+      libelleAdresse: endAddress.value,  
+      latitude: "50.6185789",  
+      longitude: "3.0638805",  
+      clients: [],  
+      courseAdrIdAdresseNavigations: [],  
+      courseIdAdresseNavigations: [],  
+      coursiers: [],  
+      entreprises: [],  
+      etablissements: [],  
+      idVilleNavigation: null,  
+      lieuFavoris: [],  
+      velos: [], 
     });
 
     console.log("✅ adresse créée avec succès !");
-    router.push('/search-driver');
   } catch (error) {
     console.error("❌ Erreur lors de la création de l'adresse :", error);
   }
 
-
   try {
     adresse1.value = await getAdresseByLibelleAdresse(startAddress.value);
     adresse2.value = await getAdresseByLibelleAdresse(endAddress.value);
-    tripTime.value = tripTime.value + ':00'
-    await rideStore.NewCourses({
+    tripTime.value = tripTime.value + ':00';
+    var newCourse = await rideStore.NewCourses({
       idCoursier: null,  
       idCb: null,  
       idAdresse: adresse1.value.idAdresse,
@@ -107,17 +154,17 @@ const validerPrestation = async (prestation) => {
       idPrestation: prestation.idPrestation,  
       dateCourse: tripDate.value,  
       heureCourse: tripTime.value,  
-      prixCourse: 25.5,
+      prixCourse: calculatePrice(prestation.idPrestation),
       statutCourse: "En attente",
       noteCourse: null,
       commentaireCourse: "",
       pourboire: 0,
-      distance: 10.5,
-      temps: 15
+      distance: tripLength.value,
+      temps: tripDuration.value
     });
-
-    console.log("✅ course créée avec succès !");
-    router.push('/search-driver');
+    console.log("🧪 newCourse:", newCourse);
+    console.log(`✅ course ${newCourse} créée avec succès !`, newCourse);
+    router.push(`/search-driver/${newCourse.idCourse}`);
   } catch (error) {
     console.error("❌ Erreur lors de la création de la course :", error);
   }
@@ -128,7 +175,7 @@ const validerPrestation = async (prestation) => {
   <HomeContent />
   <div class="prestation-container">
     <div class="prestation-header">
-      <p>{{ prestationMessage }}</p>
+      <p v-html="prestationMessage"></p>
     </div>
 
     <div class="prestation-list">
@@ -136,13 +183,14 @@ const validerPrestation = async (prestation) => {
         <div class="prestation-info">
           <h3 class="libelle-prestation">{{ prestation.libellePrestation }}</h3>
           <p class="p-prestation">{{ prestation.descriptionPrestation }}</p>
-          <p class="p-prestation"><strong>Distance :</strong> 10 km</p>
-          <p class="p-prestation"><strong>Temps estimé :</strong> 15 min</p>
-          <p class="p-prestation"><strong>Prix estimé :</strong> 25 €</p>
+          <p class="p-prestation"><strong>Distance :</strong> {{ tripLength }} kilomètres</p>
+          <p class="p-prestation"><strong>Temps estimé :</strong> {{ tripDuration }} minutes</p>
+          <p class="p-prestation"><strong>Prix estimé :</strong>
+          {{ calculatePrice(prestation.idPrestation) }} €
+          </p>          
           <button @click="validerPrestation(prestation)" class="btn-panier mt-4">Réserver</button>
         </div>
         <img :src="`/images/${prestation.imagePrestation}`" :alt="prestation.libellePrestation" class="img-prestation" />
-
       </div>
     </div>
   </div>
@@ -164,8 +212,8 @@ const validerPrestation = async (prestation) => {
     margin-bottom: 8px;
     padding-right: 8px;
 }
-.li-prestation
-{
+
+.li-prestation {
     background: rgb(255,255,255);
     -webkit-box-align: center;
     align-items: start;
@@ -180,7 +228,7 @@ const validerPrestation = async (prestation) => {
     transition: all 0.5s;
 }
 .prestation-header {
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 700;
   line-height: 44px;
   text-align: center;
@@ -237,5 +285,4 @@ const validerPrestation = async (prestation) => {
     background: rgb(40, 40, 40);
     color: rgb(255, 255, 255);
   }
-
 </style>

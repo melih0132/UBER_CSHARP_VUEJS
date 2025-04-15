@@ -1,16 +1,12 @@
 <template>
-  <!-- Notification -->
   <div v-if="successMessage" class="notification">
     <p>{{ successMessage }}</p>
   </div>
 
-  <!-- Contenu principal -->
   <div class="container" style="min-height: 100vh; padding: 2rem;">
-    <!-- Filtres -->
     <div v-if="etablissements.length > 0" class="my-4">
       <input type="text" v-model="rechercheProduit" class="search-input"
         placeholder="Recherchez un produit ou un établissement..." />
-
       <div class="filter">
         <div class="filters-grid">
           <select v-model="filtreType" class="filter-select">
@@ -27,7 +23,7 @@
           </select>
 
           <select v-model="filtreLivraison" class="filter-select">
-            <option value="">Mode de retrait</option>
+            <option value="">Type de livraison</option>
             <option value="livraison">Livraison</option>
             <option value="retrait">Retrait</option>
           </select>
@@ -35,9 +31,7 @@
       </div>
     </div>
 
-    <!-- Affichage combiné -->
     <template v-if="selectedTypeAffichage === 'all'">
-      <!-- Section Établissements -->
       <div class="etablissements my-4">
         <h1 class="div-title">Établissements</h1>
         <div v-if="etablissementsFiltres.length === 0" class="my-4 text-center">
@@ -67,7 +61,6 @@
         </div>
       </div>
 
-      <!-- Section Produits -->
       <div class="produits">
         <h1 class="div-title">Produits</h1>
         <div v-if="produitsFiltres.length === 0" class="my-4 text-center">
@@ -86,7 +79,6 @@
       </div>
     </template>
 
-    <!-- Affichage des établissements uniquement -->
     <div v-else-if="selectedTypeAffichage === 'etablissements'" class="my-4">
       <h1 class="div-title">Établissements</h1>
       <div class="etablissements-grid">
@@ -113,7 +105,6 @@
       </div>
     </div>
 
-    <!-- Affichage des produits uniquement -->
     <div v-else-if="selectedTypeAffichage === 'produits'" class="produits">
       <h1 class="div-title">Produits</h1>
       <div class="produits-grid">
@@ -190,7 +181,6 @@ const checkLivraison = (etab) => {
 
 const ajouterAuPanier = async (produit) => {
   try {
-    // Récupérer l'ID de l'établissement du produit
     if (!produit.idEtablissements || produit.idEtablissements.length === 0) {
       console.error("Le produit n'a pas d'établissement associé");
       return;
@@ -198,15 +188,12 @@ const ajouterAuPanier = async (produit) => {
     
     const etablissementId = produit.idEtablissements[0].idEtablissement;
     
-    // Ajouter au localStorage pour les utilisateurs non connectés
     updateLocalStoragePanier(produit, etablissementId);
     
-    // Ajouter à la base de données pour les utilisateurs connectés
     if (userStore.isAuthenticated && userStore.user) {
       await updateDatabasePanier(produit, etablissementId);
     }
     
-    // Afficher le message de succès
     showSuccessMessage(produit.nomProduit);
   } catch (error) {
     console.error("Erreur lors de l'ajout au panier:", error);
@@ -215,19 +202,15 @@ const ajouterAuPanier = async (produit) => {
 
 const updateLocalStoragePanier = (produit, etablissementId) => {
   try {
-    // Récupérer le panier du localStorage
     const panier = JSON.parse(localStorage.getItem('panier')) || [];
     
-    // Vérifier si le produit existe déjà dans le panier
     const existingIndex = panier.findIndex(p => 
       p.idProduit === produit.idProduit && p.idEtablissement === etablissementId
     );
     
     if (existingIndex !== -1) {
-      // Incrémenter la quantité si le produit existe déjà
       panier[existingIndex].quantite += 1;
     } else {
-      // Ajouter le produit s'il n'existe pas encore
       panier.push({
         idProduit: produit.idProduit,
         idEtablissement: etablissementId,
@@ -237,8 +220,7 @@ const updateLocalStoragePanier = (produit, etablissementId) => {
         quantite: 1
       });
     }
-    
-    // Sauvegarder le panier mis à jour
+
     localStorage.setItem('panier', JSON.stringify(panier));
   } catch (error) {
     console.error("Erreur lors de la mise à jour du panier local:", error);
@@ -247,17 +229,14 @@ const updateLocalStoragePanier = (produit, etablissementId) => {
 
 const updateDatabasePanier = async (produit, etablissementId) => {
   try {
-    // Récupérer le panier actuel de l'utilisateur depuis l'API
     const panierData = await GetPanierById(userStore.user.userId);
     
     if (panierData && panierData.contient2s) {
-      // Vérifier si le produit existe déjà dans le panier
       const existingProduct = panierData.contient2s.find(
         item => item.idProduit === produit.idProduit && item.idEtablissement === etablissementId
       );
       
       if (existingProduct) {
-        // Mettre à jour la quantité si le produit existe déjà
         const nouvelleQuantite = existingProduct.quantite + 1;
         await MajQuantiteProduitPanier(
           userStore.user.userId,
@@ -266,7 +245,6 @@ const updateDatabasePanier = async (produit, etablissementId) => {
           nouvelleQuantite
         );
       } else {
-        // Ajouter le produit s'il n'existe pas encore
         await AjoutAuPanier(
           userStore.user.userId,
           produit.idProduit,
@@ -274,7 +252,6 @@ const updateDatabasePanier = async (produit, etablissementId) => {
         );
       }
     } else {
-      // Si le panier n'existe pas ou est vide, ajouter simplement le produit
       await AjoutAuPanier(
         userStore.user.userId,
         produit.idProduit,
@@ -298,15 +275,11 @@ const formatPrice = (price) => {
 const isEtablissementOpen = (horaires) => {
   if (!horaires || horaires.length === 0) return false;
   const dateFilter = new Date(selectedDate.value);
-  // Obtenir le jour de la semaine en français (ex: "lundi")
   const jourSemaine = new Intl.DateTimeFormat('fr-FR', { weekday: 'long' }).format(dateFilter);
-  // Recherche d'un horaire correspondant au jour
   const horairesDuJour = horaires.find(
     h => h.jourSemaine.toLowerCase() === jourSemaine.toLowerCase()
   );
   if (!horairesDuJour) return false;
-
-  // Fonction pour extraire "HH:mm" à partir d'une chaîne ISO
   const extractHourMinutes = (isoString) => {
     const date = new Date(isoString);
     const hours = date.getUTCHours().toString().padStart(2, '0');
@@ -337,23 +310,24 @@ onMounted(() => {
 <style scoped>
 .notification {
   position: fixed;
-  top: 80px;
+  top: 20px;
   right: 20px;
-  background-color: #28a745;
+  background-color: rgb(43, 43, 43);
   color: white;
-  padding: 10px 20px;
-  border-radius: 5px;
-  font-size: 16px;
+  padding: 15px 25px;
+  border-radius: 10px;
+  font-size: 18px;
   z-index: 1000;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   opacity: 1;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  transform: translateY(0);
 }
 
 .notification.hide {
   opacity: 0;
+  transform: translateY(-20px);
 }
-
 
 .container {
   cursor: pointer;
@@ -399,7 +373,6 @@ h1 {
   height: 50px;
 }
 
-
 .filters-grid {
   display: flex;
   gap: 1rem;
@@ -413,8 +386,6 @@ h1 {
   justify-content: center;
   gap: 10px;
 }
-
-
 
 .filter .btn-dark {
   background-color: #000;
@@ -594,7 +565,6 @@ h1 {
   color: rgb(255, 255, 255);
 }
 
-/* Additional Uber Eats-specific styles */
 .header {
   background-color: #000;
   color: #fff;

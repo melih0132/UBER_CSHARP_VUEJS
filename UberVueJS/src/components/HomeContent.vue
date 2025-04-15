@@ -11,33 +11,32 @@
               <h6>Ajoutez les détails de votre course, montez à bord et c'est parti.</h6>
             </div>
 
-            <!-- Adresse départ -->
             <div class="address-input-container">
-              <input type="text" id="startAddress" v-model="startAddress" placeholder="Adresse de départ" required
-                @input="fetchSuggestions('start')" @focus="fetchSuggestions('start')">
+              <input type="text" id="startAddress" @input="debouncedFetchSuggestions('start')" v-model="startAddress"
+                placeholder="Adresse de départ" required @focus="fetchSuggestions('start')">
               <ul v-if="startSuggestions.length" class="suggestions-list">
-                <li v-for="s in startSuggestions" :key="s.place_id" @click="selectAddress('start', s)">
-                  {{ s.description }}
+                <li v-for="(suggestion, index) in startSuggestions" :key="index"
+                  @click="selectAddress(suggestion, 'start')">
+                  {{ formatAddress(suggestion) }}
                 </li>
               </ul>
 
-              <small>Veuillez renseigner votre adresse complète</small>
+              <small>Veuillez renseigner l'adresse complète</small>
             </div>
 
-            <!-- Adresse arrivée -->
             <div class="address-input-container">
               <input type="text" id="endAddress" v-model="endAddress" placeholder="Adresse d'arrivée" required
-                @input="fetchSuggestions('end')" @focus="fetchSuggestions('end')">
+                @input="debouncedFetchSuggestions('end')" @focus="fetchSuggestions('end')">
               <ul v-if="endSuggestions.length" class="suggestions-list">
-                <li v-for="s in startSuggestions" :key="s.place_id" @click="selectAddress('start', s)">
-                  {{ s.description }}
+                <li v-for="(suggestion, index) in endSuggestions" :key="index"
+                  @click="selectAddress(suggestion, 'end')">
+                  {{ formatAddress(suggestion) }}
                 </li>
               </ul>
 
-              <small>Veuillez renseigner votre adresse complète</small>
+              <small>Veuillez renseigner l'adresse complète</small>
             </div>
 
-            <!-- Date et heure -->
             <div class="date-container">
               <div class="date-time-container mt-3 mr-3" @click="$refs.dateInput.showPicker()">
                 <label id="tripDateLabel" data-icon="📅" class="mr-1">
@@ -59,12 +58,10 @@
               </div>
             </div>
 
-            <!-- Distance et bouton -->
             <div v-if="distance" id="distanceResult" class="mt-3">
-              Distance estimée : {{ distance }} km • Durée : {{ duration }}
+              Distance estimée : {{ distance }} km • Durée : {{ duration }} minutes
             </div>
-            <button v-if="isAuthenticated" @click="handleSubmit" class="btn btn-primary mt-4">Voir les
-              prestations</button>
+            <button v-if="isAuthenticated" @click="handleSubmit" class="btn btn-primary mt-4">Voir les prestations</button>
             <router-link v-else to="/login" class="mt-4">Voir les prestations</router-link>
           </div>
 
@@ -82,6 +79,9 @@ import { useUserStore } from '@/stores/userStore';
 import MapView from '@/components/MapView.vue';
 import { mapStores } from 'pinia';
 import axios from 'axios';
+import L from 'leaflet';
+import 'leaflet-routing-machine';
+import debounce from 'lodash/debounce';
 
 
 export default {
@@ -102,8 +102,8 @@ export default {
       duration: null,
       debounceTimer: null,
       isAuthenticated: false,
-      startSuggestions: [],
-      endSuggestions: [],
+      map: null,
+
     };
   },
   computed: {
@@ -114,37 +114,75 @@ export default {
     },
   },
   methods: {
-    async fetchSuggestions(type, input) {
-      if (input.length < 3) return;
+    async fetchSuggestions(type) {
+      const address = type === 'start' ? this.startAddress : this.endAddress;
+      const suggestionsList = type === 'start' ? this.startSuggestions : this.endSuggestions;
+
+      suggestionsList.length = 0;
+
+      if (address.trim().length < 2) return;
 
       try {
-        const response = await fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=TA_CLE_API&language=fr&components=country:fr`);
-        const data = await response.json();
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&addressdetails=1&countrycodes=fr`;
+        const response = await axios.get(url);
+        const results = response.data;
 
-        if (data.status === 'OK') {
-          const suggestions = data.predictions;
-          if (type === 'start') {
-            this.startSuggestions = suggestions;
-          } else {
-            this.endSuggestions = suggestions;
+        results.forEach((result) => {
+          const address = result.address;
+
+          const houseNumber = address.house_number || '';
+          const road = address.road || '';
+          const cityDistrict = address.city_district || '';
+          const suburb = address.suburb || '';
+          const town = address.town || '';
+          const village = address.village || '';
+          const city = address.city || '';
+          const postcode = address.postcode || '';
+
+          const detailedCity = cityDistrict || suburb || town || village || city;
+
+          const formattedAddress = [
+            houseNumber,
+            road,
+            detailedCity,
+            postcode,
+          ]
+            .filter((part) => part)
+            .join(', ');
+
+          if (formattedAddress) {
+            suggestionsList.push({
+              formattedAddress,
+              lat: parseFloat(result.lat),
+              lon: parseFloat(result.lon),
+            });
           }
-        } else {
-          console.error('Erreur API Google:', data.status, data.error_message);
-        }
+        });
       } catch (error) {
-        console.error('Erreur de récupération des suggestions :', error);
+        console.error('Erreur lors de la récupération des adresses:', error);
       }
     },
 
-    selectAddress(type, suggestion) {
+    updateMap() {
+      if (this.startLatLng && this.endLatLng) {
+        this.calculateRoute();
+      } else {
+        if (this.startLatLng) this.addMarker(this.startLatLng, 'Départ');
+        if (this.endLatLng) this.addMarker(this.endLatLng, 'Arrivée');
+      }
+    },
+
+    selectAddress(suggestion, type) {
       if (type === 'start') {
-        this.startAddress = suggestion.description;
+        this.startAddress = suggestion.formattedAddress;
+        this.startLatLng = [suggestion.lat, suggestion.lon];
         this.startSuggestions = [];
       } else {
-        this.endAddress = suggestion.description;
+        this.endAddress = suggestion.formattedAddress;
+        this.endLatLng = [suggestion.lat, suggestion.lon];
         this.endSuggestions = [];
       }
-      this.calculateRoute();
+      this.updateMap();
     },
 
     generateTimeOptions() {
@@ -155,6 +193,17 @@ export default {
         }
       }
       return options;
+    },
+
+    formatAddress(suggestion) {
+      return suggestion.formattedAddress;
+    },
+
+    addMarker(latLng, label) {
+      L.marker(latLng)
+        .addTo(this.map)
+        .bindPopup(label)
+        .openPopup();
     },
 
     getNextHalfHour() {
@@ -170,21 +219,44 @@ export default {
       this.showTimeDropdown = false;
     },
 
-    async calculateRoute() {
-      if (!this.startAddress || !this.endAddress) return;
+    calculateRoute() {
+      if (this.route) {
+        this.map.removeLayer(this.route);
+      }
 
-      try {
-        const response = await axios.post('/api/calculate-route', {
-          start: this.startAddress,
-          end: this.endAddress
-        });
+      const routeControl = L.Routing.control({
+        waypoints: [
+          L.latLng(this.startLatLng),
+          L.latLng(this.endLatLng),
+        ],
+        routeWhileDragging: true,
+        show: false,
+        addWaypoints: false,
+      }).addTo(this.map);
 
-        this.distance = (response.data.distance / 1000).toFixed(1);
-        this.duration = response.data.duration;
+      this.route = routeControl.getPlan();
+      routeControl.on('routesfound', (event) => {
+        const routes = event.routes;
+        const distanceInKm = routes[0].summary.totalDistance / 1000;
+        console.log(`Distance du trajet : ${distanceInKm.toFixed(2)} km`);
+        this.distance = distanceInKm.toFixed(2);
+        this.duration = Math.round(routes[0].summary.totalTime / 60);        
+        const instructionsContainer = document.querySelector('.leaflet-routing-container');
+        if (instructionsContainer) {
+          instructionsContainer.style.display = 'none';
+        }
+      });
+    },
 
-        this.$refs.mapView.drawRoute(response.data.polyline);
-      } catch (error) {
-        console.error('Route calculation error:', error);
+    debouncedFetchSuggestions: debounce(function (type) {
+      this.fetchSuggestions(type);
+    }, 300),
+
+    onVoirLesPrestationsClick() {
+      if (this.startLatLng && this.endLatLng) {
+        this.calculateRoute();
+      } else {
+        alert("Veuillez saisir les adresses de départ et d'arrivée.");
       }
     },
 
@@ -206,10 +278,13 @@ export default {
           start: this.startAddress,
           end: this.endAddress,
           date: this.tripDate,
-          time: this.tripTime
+          time: this.tripTime,
+          length: this.distance,
+          duration: this.duration
         }
       });
     },
+
 
     checkAuth() {
       this.userStore = useUserStore();
@@ -218,6 +293,7 @@ export default {
   },
   mounted() {
     this.checkAuth();
+    this.map = this.$refs.mapView.map;
   }
 };
 </script>
@@ -225,6 +301,25 @@ export default {
 
 
 <style scoped>
+ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+li {
+  cursor: pointer;
+  padding: 5px;
+  background-color: white;
+  padding: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+}
+
+li:hover {
+  background-color: grey;
+}
+
 #map {
   height: 500px;
   width: 100%;
@@ -466,5 +561,17 @@ a.mt-4:hover {
   background-color: #333;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   text-decoration: none;
+}
+
+.leaflet-routing-container {
+  display: none !important;
+}
+
+.leaflet-top {
+  display: none !important;
+}
+
+.leaflet-right {
+  display: none !important;
 }
 </style>

@@ -3,17 +3,14 @@
         <div class="container">
             <h1>Choisissez une carte bancaire</h1>
 
-            <div v-if="cartesBancaires.length > 0">
-                <div class="card-selection">
-                    <div v-for="(carte, index) in cartesBancaires" :key="carte.idCb" class="col-md-6 mb-1">
-                        <label>
-                            <input type="radio" name="carte_id" :value="carte.idCb" v-model="selectedCarteId" />
-                            <span>
-                                **** **** **** {{ getLastDigits(carte.numeroCb) }} - Exp.
-                                {{ formatDate(carte.dateExpireCb) }}
-                            </span>
-                        </label>
-                    </div>
+            <div v-if="cartesBancaires.length > 0" class="card-selection row">
+                <div v-for="(carte, index) in cartesBancaires" :key="carte.idCb" class="col-12 col-md-6 mb-3">
+                    <label>
+                        <input type="radio" name="carte_id" :value="carte.idCb" v-model="selectedCarteId"/>
+                        <span class="fs-6">
+                            **** **** **** {{ carte.numeroCb.slice(-4) }} — Exp. {{ formatDate(carte.dateExpireCb) }}
+                        </span>
+                    </label>
                 </div>
             </div>
 
@@ -21,60 +18,63 @@
                 <p>Aucune carte bancaire enregistrée.</p>
             </div>
 
-            <router-link :to="{ name: 'Commandes', query: { carteId: selectedCarteId } }"
-                class="btn-panier text-decoration-none ms-2">
+            <button v-if="cartesBancaires.length > 0" class="btn-panier text-decoration-none me-2"
+                @click="goToCommande">
                 Utiliser cette carte
-            </router-link>
-            <router-link to="/myaccount/carte-bancaire" class="btn-panier text-decoration-none ms-2">
+            </button>
+            <router-link to="/myaccount/carte-bancaire" class="btn-panier text-decoration-none">
                 Ajouter une nouvelle carte bancaire
             </router-link>
         </div>
     </div>
 </template>
 
-<script>
+<script setup>
+import { useRoute, useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
 import { useUserStore } from '@/stores/userStore';
 import { getCartesByClientId } from '@/services/carteBancaireService';
 import { storeToRefs } from 'pinia';
-import { ref, onMounted } from 'vue';
 
-export default {
-    setup() {
-        const userStore = useUserStore();
-        const { user } = storeToRefs(userStore);
+const router = useRouter();
+const route = useRoute();
 
-        const cartesBancaires = ref([]);
-        const selectedCarteId = ref(null);
+const { user } = storeToRefs(useUserStore());
+const cartesBancaires = ref([]);
+const selectedCarteId = ref(null);
 
-        const fetchCartesBancaires = async () => {
-            try {
-                const cartes = await getCartesByClientId(user.value.userId);
-                cartesBancaires.value = cartes;
-                console.table(cartesBancaires.value);
-            } catch (error) {
-                console.error('Erreur lors de la récupération des cartes bancaires :', error);
-            }
-        };
+const formatDate = (date) => {
+    const d = new Date(date);
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = String(d.getFullYear());
+    return `${month}/${year}`;
+}
 
-        const formatDate = (date) => {
-            const d = new Date(date);
-            return `${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-        };
-
-        const getLastDigits = (numeroCb) => {
-            return numeroCb.slice(-4);
-        };
-
-        onMounted(fetchCartesBancaires);
-
-        return {
-            cartesBancaires,
-            selectedCarteId,
-            formatDate,
-            getLastDigits
-        };
+const fetchCartesBancaires = async () => {
+    try {
+        const cartes = await getCartesByClientId(user.value.userId);
+        cartesBancaires.value = cartes;
+    } catch (error) {
+        console.error('Erreur chargement cartes :', error);
     }
 };
+
+const goToCommande = () => {
+    if (!selectedCarteId.value) {
+        alert("Veuillez sélectionner une carte.");
+        return;
+    }
+
+    router.push({
+        name: 'Commandes',
+        query: {
+            ...route.query,
+            carteId: selectedCarteId.value,
+        },
+    });
+};
+
+onMounted(fetchCartesBancaires);
 </script>
 
 <style scoped>
@@ -134,11 +134,6 @@ label {
     transform: scale(1.2);
 }
 
-.actions {
-    display: flex;
-    gap: 16px;
-}
-
 .btn-panier {
     font-size: 14px;
     font-weight: 600;
@@ -171,23 +166,12 @@ label {
         justify-content: space-between;
     }
 
-    .actions {
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .btn {
-        width: 100%;
-        text-align: center;
-    }
-
     .summary-content {
         flex-direction: column;
         gap: 16px;
     }
 }
 
-/* CHOIX LIVRAISON  */
 .form-group {
     margin-bottom: 20px;
 }
@@ -221,7 +205,6 @@ label {
     background: #f1f1f1;
 }
 
-/* CHOIX CB */
 .card-selection {
     display: flex;
     flex-direction: column;
@@ -249,11 +232,8 @@ label {
 
 .card-selection input[type="radio"] {
     accent-color: #28a745;
-    transform: scale(1.2);
 }
 
-
-/* POST COMMANDE */
 .card {
     background: #fff;
     border: none;
@@ -273,67 +253,10 @@ label {
     padding: 15px;
 }
 
-.list-group {
-    list-style: none;
-    padding: 0;
-}
-
-.list-group-item {
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-}
-
-.list-group-item:last-child {
-    border-bottom: none;
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-.table th,
-.table td {
-    text-align: center;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-}
-
-.table th {
-    font-size: 0.9rem;
-    color: #666;
-}
-
-.table td {
-    font-size: 0.85rem;
-    color: #333;
-}
-
-.text-muted {
-    color: #999;
-}
-
 .alert {
     padding: 10px;
     margin-bottom: 15px;
     border-radius: 5px;
     font-size: 0.9rem;
-}
-
-.form-inline {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-
-}
-
-.form-inline .form-group {
-    flex: 0.5;
-}
-
-
-.new-card-form {
-    display: block;
 }
 </style>

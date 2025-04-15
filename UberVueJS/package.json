@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
@@ -16,7 +17,10 @@
     "boxicons": "^2.1.4",
     "fuse.js": "^7.1.0",
     "leaflet": "^1.9.4",
+    "leaflet-routing-machine": "^3.2.12",
+    "lodash": "^4.17.21",
     "pinia": "^3.0.1",
+    "vitest": "^3.1.1",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
     "vuex": "^4.1.0"

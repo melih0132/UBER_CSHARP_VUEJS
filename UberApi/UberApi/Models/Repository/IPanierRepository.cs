@@ -9,6 +9,8 @@ namespace UberApi.Models.Repository
 
         Task UpdateProduitPanierQuantiteAsync(int panierId, int produitId, int etablissementId, int quantite);
 
+        Task DeleteProduitPanierAsync(int panierId, int produitId, int etablissementId);
+
     }
 
 }

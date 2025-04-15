@@ -10,7 +10,6 @@ export const getAdresseById = async (idAdresse) => {
   }
 };
 
-
 export const getAdresseByLibelleAdresse = async (libelleAdresse) => {
     try {
       const response = await apiClient.get("/Adresses/GetByLibelleAdresse/" + libelleAdresse);

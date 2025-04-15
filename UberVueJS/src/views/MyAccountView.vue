@@ -3,7 +3,6 @@
         <div class="account mt-5">
             <h1 v-if="showTitle" class="mb-4 text-center">Mon compte</h1>
             <div class="row">
-                <!-- Sidebar Client -->
                 <div class="col-md-3">
                     <ul id="sidebar-menu" class="list-group shadow-sm">
                         <li class="list-group-item" @click="setActiveContent('content-informations')"
@@ -11,31 +10,30 @@
                             <i class="fas fa-user me-2"></i> Informations compte
                         </li>
                         <ul class="list-group">
-                            <li class="list-group-item" @click="setActiveContent('content-securite')"
-                                :class="{ active: activeContent === 'content-securite' }">
-                                <i class="fas fa-shield-alt me-2"></i> Sécurité
-                            </li>
                             <li class="list-group-item" @click="setActiveContent('content-confidentialite')"
                                 :class="{ active: activeContent === 'content-confidentialite' }">
                                 <i class="fas fa-user-shield me-2"></i> Confidentialité et données
                             </li>
-                            <li class="list-group-item" @click="setActiveContent('content-cartebancaire')"
+                            <li class="list-group-item" @click="setActiveContent('content-securite')"
+                                :class="{ active: activeContent === 'content-securite' }">
+                                <i class="fas fa-shield-alt me-2"></i> Sécurité
+                            </li>
+                            <router-link to="/myaccount/carte-bancaire" class="list-group-item"
+                                @click="setActiveContent('content-cartebancaire')"
                                 :class="{ active: activeContent === 'content-cartebancaire' }">
                                 <i class="fas fa-credit-card me-2"></i> Carte Bancaire
-                            </li>
+                            </router-link>
                         </ul>
                     </ul>
                 </div>
 
-                <!-- Main Content -->
                 <div class="col-md-9">
                     <div class="p-4">
-                        <!-- content-informations -->
                         <div id="content-informations"
                             :class="{ 'content-section': true, 'active': activeContent === 'content-informations' }">
                             <div class="mb-4">
                                 <img :src="userStore.user.PhotoProfile || profileImageUrl" alt="Photo de profil"
-                                    title="-5 points pour nathan" class="pdp_picture" id="profileImage">
+                                    title="Je taime" class="pdp_picture" id="profileImage">
                             </div>
                             <div class="row">
                                 <div class="col-12" v-for="(value, key) in userFields" :key="key">
@@ -44,7 +42,6 @@
                             </div>
                         </div>
 
-                        <!-- content-securite -->
                         <div id="content-securite"
                             :class="{ 'content-section': true, 'active': activeContent === 'content-securite' }">
                             <h1 class="h4-mb-4">Sécurité</h1>
@@ -53,7 +50,6 @@
                             </div>
                         </div>
 
-                        <!-- content-addcartebancaire -->
                         <div id="content-addcartebancaire"
                             :class="{ 'content-section': true, 'active': activeContent === 'content-addcartebancaire' }">
                             <h1 class="h4-mb-4">Ajouter une Carte Bancaire</h1>
@@ -73,6 +69,7 @@
                                     <input placeholder="123" maxlength="3" required pattern="\d{3}" type="number"
                                         class="form-control">
                                 </div>
+
                                 <div class="mb-3">
                                     <label>Type de carte</label>
                                     <select id="typecarte" name="typecarte" class="form-select" required>
@@ -84,21 +81,25 @@
                                 <div class="mb-889">
                                     <button class="btn-compte text-decoration-none px-4 py-2"
                                         @click="AjouterCarte()">Ajouter la carte</button>
-                                    <button class="btn-compte text-decoration-none px-4 py-2">Annuler</button>
+                                    <button class="btn-compte text-decoration-none px-4 py-2 ms-2">Annuler</button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- content-confidentialite -->
                         <div id="content-confidentialite"
                             :class="{ 'content-section': true, 'active': activeContent === 'content-confidentialite' }">
-                            <h1 class="h4-mb-4">Confidentialité et données</h1>
-                            <div>
-                                <p class="text-center">Configurer vos paramètres de sécurité ici.</p>
-                            </div>
+                            <h2 class="h4 mb-4">Confidentialité et données</h2>
+
+                            <table  class="table table-bordered">
+                                <tbody>
+                                    <tr v-for="(value, key) in userFields" :key="key">
+                                        <td><strong>{{ key }}</strong></td>
+                                        <td>{{ formatUserField(value) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
 
-                        <!-- content-cartebancaire -->
                         <div id="content-cartebancaire"
                             :class="{ 'content-section': true, 'active': activeContent === 'content-cartebancaire' }">
                             <h1 class="h4-mb-4">Mes cartes bancaires</h1>
@@ -215,7 +216,7 @@ const formattedNumeroCarte = computed({
         return rawNumeroCarte.value.replace(/(.{4})/g, '$1 ').trim();
     },
     set(val) {
-        rawNumeroCarte.value = val.replace(/\D/g, '').slice(0, 16); // garde seulement les chiffres
+        rawNumeroCarte.value = val.replace(/\D/g, '').slice(0, 16);
     }
 });
 
@@ -333,7 +334,6 @@ h5 {
     font-weight: bold;
 }
 
-/* List Groups */
 .list-group {
     cursor: pointer;
     border-radius: 10px;
@@ -409,7 +409,6 @@ h5 {
     font-size: 1.2rem;
 }
 
-/* Buttons */
 .btn-cb,
 .btn-details,
 .btn-compte {
@@ -476,7 +475,6 @@ label {
     display: block;
 }
 
-/* Profile Picture */
 .pdp_picture {
     width: 100px;
     height: 100px;
@@ -516,7 +514,6 @@ label {
     text-decoration: underline;
 }
 
-/* Alerts */
 .alert {
     padding: 10px;
     border-radius: 8px;
@@ -561,7 +558,6 @@ label {
     }
 }
 
-/* Responsive Design */
 @media screen and (max-width: 768px) {
     h2 {
         font-size: 1.5rem;
@@ -629,9 +625,5 @@ input[type="number"]::-webkit-inner-spin-button {
     left: 30%;
     margin: 5px;
 
-}
-
-#but-supp {
-    margin-right: 20px;
 }
 </style>

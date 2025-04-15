@@ -22,6 +22,7 @@ namespace UberApi.Controllers
         {
             dataRepository = dataRepo;
         }
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Panier>>> GetPaniersAsync()
         {
@@ -64,7 +65,7 @@ namespace UberApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> PutPanierAsync(int id,int produitId, int etablissementId ,int quantite)
+        public async Task<IActionResult> PutPanierProduitAsync(int id,int produitId, int etablissementId ,int quantite)
         {
 
                 await dataRepository.UpdateProduitPanierQuantiteAsync(id,produitId, etablissementId,quantite);
@@ -96,7 +97,7 @@ namespace UberApi.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeletePanierAsync(int id)
+        public async Task<IActionResult> DeletePanierAsync(int id, int produitID,int etablissementID)
         {
             var Panier = await dataRepository.GetByIdAsync(id);
 
@@ -105,7 +106,7 @@ namespace UberApi.Controllers
                 return NotFound();
 
             }
-            await dataRepository.DeleteAsync(Panier.Value);
+            await dataRepository.DeleteProduitPanierAsync(id, produitID, etablissementID);
             return NoContent();
         }
     }

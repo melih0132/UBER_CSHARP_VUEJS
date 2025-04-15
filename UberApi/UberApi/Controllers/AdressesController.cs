@@ -70,29 +70,6 @@ namespace UberApi.Controllers
         }
 
 
-        [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> PutAdresseAsync(int id, Adresse adresse)
-        {
-            if (id != adresse.IdAdresse)
-            {
-                return BadRequest();
-            }
-            var userToUpdate = await dataRepository.GetByIdAsync(id);
-            if (userToUpdate.Value == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                await dataRepository.UpdateAsync(userToUpdate.Value, adresse);
-                return NoContent();
-            }
-        }
-
-
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -107,19 +84,5 @@ namespace UberApi.Controllers
         }
 
 
-        [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeleteAdresseAsync(int id)
-        {
-            var adresse = await dataRepository.GetByIdAsync(id);
-            if (adresse.Value == null)
-            {
-                return NotFound();
-
-            }
-            await dataRepository.DeleteAsync(adresse.Value);
-            return NoContent();
-        }
     }
 }

@@ -15,11 +15,8 @@
         </h1>
         <div class="categories-section">
           <div class="categories">
-            <span
-              v-if="etablissement && etablissement.idCategoriePrestations"
-              v-for="(categorie, index) in etablissement.idCategoriePrestations"
-              :key="categorie.idCategoriePrestation"
-            >
+            <span v-if="etablissement && etablissement.idCategoriePrestations"
+              v-for="(categorie, index) in etablissement.idCategoriePrestations" :key="categorie.idCategoriePrestation">
               {{ categorie.libelleCategoriePrestation }}
               <span v-if="index < etablissement.idCategoriePrestations.length - 1">•</span>
             </span>
@@ -46,12 +43,8 @@
       <div class="etablissement-info">
         <div class="options-container">
           <div class="options">
-            <span :class="['option', etablissement?.livraison ? 'active' : '']"
-              >Livraison</span
-            >
-            <span :class="['option', etablissement?.aEmporter ? 'active' : '']"
-              >À emporter</span
-            >
+            <span :class="['option', etablissement?.livraison ? 'active' : '']">Livraison</span>
+            <span :class="['option', etablissement?.aEmporter ? 'active' : '']">À emporter</span>
           </div>
         </div>
         <div class="hours-section">
@@ -127,15 +120,12 @@ export default {
       try {
         const etablissementId = this.etablissement.idEtablissement;
 
-        // Mise à jour du localStorage pour les utilisateurs non connectés
         this.updateLocalStoragePanier(produit, etablissementId);
 
-        // Mise à jour de la base de données pour les utilisateurs connectés
         if (this.userStore.isAuthenticated && this.userStore.user) {
           this.updateDatabasePanier(produit, etablissementId);
         }
 
-        // Afficher le message de succès
         this.showSuccessMessage(produit.nomProduit);
       } catch (error) {
         console.error("Erreur lors de l'ajout au panier:", error);
@@ -499,7 +489,6 @@ body {
   border-bottom: 1px solid #ddd;
 }
 
-
 .product-details {
   padding: 10px;
   display: flex;
@@ -521,7 +510,6 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 
 .product-price {
   font-size: 14px;

@@ -2,9 +2,8 @@
   <div class="container">
     <h1 class="text-center">Votre Panier</h1>
     <div class="cart">
-      <div v-if="panier.length > 0">  
+      <div v-if="panier.length > 0">
 
-        <!-- Affichage des produits du panier -->
         <div v-for="(produit, index) in panier" :key="`${produit.idProduit}-${index}`" class="cart-item">
           <div class="item-info">
             <div class="item-img">
@@ -16,10 +15,10 @@
             </div>
           </div>
           <div class="item-controls">
-            <button @click="deleteOneProduct(produit)" class="but-qauntite">-</button>
-            <input type="number" v-model.number="produit.quantite" @change="updateQuantity(produit)" min="1"
-              max="99" class="quantity-input" />
-            <button @click="addOneProduct(produit)" class="but-qauntite">+</button>
+            <button @click="deleteOneProduct(produit)" class="btn-quantite">-</button>
+            <input type="number" v-model.number="produit.quantite" @change="updateQuantity(produit)" min="1" max="99"
+              class="quantity-input" />
+            <button @click="addOneProduct(produit)" class="btn-quantite">+</button>
             <button type="button" @click="removeProduct(produit)" class="delete-btn">
               <svg viewBox="0 0 24 24">
                 <path
@@ -29,7 +28,6 @@
           </div>
         </div>
 
-        <!-- Résumé du panier -->
         <div class="cart-summary">
           <div class="summary-content">
             <div class="total">
@@ -38,13 +36,13 @@
             <div class="actions">
               <button @click="clearCart" class="btn-panier">Vider le panier</button>
               <button v-if="!userStore.isAuthenticated" @click="checkout" class="btn-panier">Passer la commande</button>
-              <router-link v-else to="/commande/panier/choix-livraison" class="btn-panier text-decoration-none">Passer la commande</router-link>
+              <router-link v-else to="/commande/panier/choix-livraison" class="btn-panier text-decoration-none">Passer
+                la commande</router-link>
             </div>
           </div>
         </div>
 
       </div>
-      <!-- Si le panier est vide -->
       <div v-else class="empty-cart">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -57,14 +55,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useUserStore } from '@/stores/userStore'
 import { useRouter } from 'vue-router'
-import { 
-  AjoutAuPanier, 
-  GetPanierById, 
-  MajQuantiteProduitPanier, 
-  SupprimerProduitDuPanier 
+import {
+  AjoutAuPanier,
+  GetPanierById,
+  MajQuantiteProduitPanier,
+  SupprimerProduitDuPanier
 } from '@/services/panierService'
 
 const userStore = useUserStore()
@@ -73,13 +71,12 @@ const router = useRouter()
 const panier = ref([])
 const totalPrix = ref(0)
 
-// Récupération du panier depuis l'API
 const fetchPanierFromAPI = async () => {
   if (!userStore.isAuthenticated) return
-  
+
   try {
     const panierData = await GetPanierById(userStore.user.userId)
-    
+
     if (panierData && panierData.contient2s) {
       panier.value = panierData.contient2s.map(item => ({
         idProduit: item.idProduit,
@@ -96,19 +93,17 @@ const fetchPanierFromAPI = async () => {
   }
 }
 
-// Synchroniser le panier local avec l'API après connexion
 const syncLocalCartWithAPI = async () => {
   if (!userStore.isAuthenticated || panier.value.length === 0) return
-  
+
   try {
-    // Pour chaque produit dans le panier local, l'ajouter au panier serveur
     for (const produit of panier.value) {
       await AjoutAuPanier(
         userStore.user.userId,
         produit.idProduit,
         produit.idEtablissement
       )
-      
+
       if (produit.quantite > 1) {
         await MajQuantiteProduitPanier(
           userStore.user.userId,
@@ -118,30 +113,25 @@ const syncLocalCartWithAPI = async () => {
         )
       }
     }
-    
-    // Puis récupérer le panier à jour depuis l'API
+
     await fetchPanierFromAPI()
-    
-    // Vider le localStorage une fois la synchronisation effectuée
+
     localStorage.removeItem('panier')
   } catch (error) {
     console.error("Erreur lors de la synchronisation du panier", error)
   }
 }
 
-// Calcul du total
 const calculateTotal = () => {
-  totalPrix.value = panier.value.reduce((total, produit) => 
+  totalPrix.value = panier.value.reduce((total, produit) =>
     total + (produit.prixProduit * produit.quantite), 0)
 }
 
-// Mise à jour quantité
 const updateQuantity = async (produit) => {
-  // Assurer que la quantité est un nombre et dans les limites
   produit.quantite = parseInt(produit.quantite) || 1
   if (produit.quantite < 1) produit.quantite = 1
   if (produit.quantite > 99) produit.quantite = 99
-  
+
   if (userStore.isAuthenticated) {
     try {
       await MajQuantiteProduitPanier(
@@ -160,10 +150,9 @@ const updateQuantity = async (produit) => {
   }
 }
 
-// Diminuer quantité
 const deleteOneProduct = async (produit) => {
   if (produit.quantite <= 1) return
-  
+
   if (userStore.isAuthenticated) {
     try {
       await MajQuantiteProduitPanier(
@@ -183,10 +172,9 @@ const deleteOneProduct = async (produit) => {
   }
 }
 
-// Augmenter quantité
 const addOneProduct = async (produit) => {
   if (produit.quantite >= 99) return
-  
+
   if (userStore.isAuthenticated) {
     try {
       await MajQuantiteProduitPanier(
@@ -206,7 +194,6 @@ const addOneProduct = async (produit) => {
   }
 }
 
-// Supprimer produit du panier
 const removeProduct = async (produit) => {
   if (userStore.isAuthenticated) {
     try {
@@ -227,13 +214,11 @@ const removeProduct = async (produit) => {
   }
 }
 
-// Vider le panier
 const clearCart = async () => {
   if (userStore.isAuthenticated && panier.value.length > 0) {
     try {
-      // Créer une copie du panier pour éviter les problèmes de modification pendant l'itération
       const produitsCopy = [...panier.value]
-      
+
       for (const produit of produitsCopy) {
         console.log(`Suppression du produit ${produit.idProduit} de l'établissement ${produit.idEtablissement}`)
         await SupprimerProduitDuPanier(
@@ -242,8 +227,7 @@ const clearCart = async () => {
           produit.idEtablissement
         )
       }
-      
-      // Rafraîchir le panier après toutes les suppressions
+
       await fetchPanierFromAPI()
     } catch (error) {
       console.error("Échec du vidage du panier", error)
@@ -255,12 +239,10 @@ const clearCart = async () => {
   }
 }
 
-// Formatage prix
 const formatPrice = (price) => {
   return parseFloat(price).toFixed(2)
 }
 
-// Checkout
 const checkout = () => {
   if (!userStore.isAuthenticated) {
     router.push({ name: 'Login' })
@@ -269,15 +251,12 @@ const checkout = () => {
   }
 }
 
-// Observer les changements d'état de connexion
 watch(() => userStore.isAuthenticated, async (newValue, oldValue) => {
   if (newValue && !oldValue) {
-    // L'utilisateur vient de se connecter, synchroniser le panier local
     await syncLocalCartWithAPI()
   }
 })
 
-// Initialisation
 onMounted(async () => {
   if (userStore.isAuthenticated) {
     await fetchPanierFromAPI()
@@ -291,15 +270,15 @@ onMounted(async () => {
       panier.value = []
     }
   }
+  const link = document.querySelector("link[rel='icon']")
+  if (link) {
+    link.href = '/public/images/UberEatsPetit.png'
+  }
+  document.title = "Mon panier"
 })
 </script>
 
 <style scoped>
-.text-center {
-  font-weight: bold;
-  font-size: 2.5rem;
-}
-
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -479,7 +458,7 @@ label {
   color: #ccc;
 }
 
-.but-qauntite {
+.btn-quantite {
   color: white;
   background-color: black;
   border-radius: 5px;

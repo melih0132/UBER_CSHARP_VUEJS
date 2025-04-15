@@ -62,27 +62,6 @@ namespace UberApi.Controllers
             return carteBancaire;
         }
 
-        [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> PutCarteBancaireAsync(int id, CarteBancaire carteBancaire)
-        {
-            if (id != carteBancaire.IdCb)
-            {
-                return BadRequest();
-            }
-            var userToUpdate = await dataRepository.GetByIdAsync(id);
-            if (userToUpdate.Value == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                await dataRepository.UpdateAsync(userToUpdate.Value, carteBancaire);
-                return NoContent();
-            }
-        }
 
 
         [HttpPost]

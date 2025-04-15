@@ -15,7 +15,7 @@ export const AjoutAuPanier = async (id, produitId, etablissementId) => {
 export const GetPanierById = async (id) => {
   try {
     const response = await apiClient.get(`/Paniers/GetById/${id}`);
-    return response.data;
+    return response.data; 
   } catch (error) {
     console.error(error);
     return [];

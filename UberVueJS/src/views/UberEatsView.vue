@@ -11,26 +11,19 @@
             <div class="form-section">
                 <form class="form-container" @submit.prevent="recherche">
                     <div class="form-grid">
-                        <!-- Ville -->
                         <div class="form-group d-flex justify-content-center">
                             <label for="recherche_ville" class="form-label">Ville</label>
                             <input type="text" v-model="rechercheVille" id="recherche_ville" class="form-input" required
                                 placeholder="Recherchez une ville" />
                         </div>
-
-                        <!-- Date -->
                         <div class="form-group d-flex justify-content-center">
                             <label for="selectedDate" class="form-label">Date</label>
                             <input type="date" v-model="selectedDate" id="selectedDate" class="form-input" required />
                         </div>
-
-                        <!-- Heure -->
                         <div class="form-group d-flex justify-content-center">
-                            <label for="selectedTime" class="form-label">Heure</label>
+                            <label for="selectedTime" class="form-label">Horaire</label>
                             <input type="time" v-model="selectedTime" id="selectedTime" class="form-input" required />
                         </div>
-
-                        <!-- Submit -->
                         <div class="form-row">
                             <button type="submit" class="form-button">Rechercher</button>
                         </div>
@@ -40,7 +33,6 @@
         </section>
     </main>
 </template>
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -89,7 +81,6 @@ onMounted(async () => {
     document.title = "Uber Eats"
 })
 </script>
-
 <style scoped>
 .main-content {
     background-image: url("/images/ubereat.png") !important;

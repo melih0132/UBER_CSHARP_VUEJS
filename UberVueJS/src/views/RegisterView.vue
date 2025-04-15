@@ -1,19 +1,20 @@
 <template>
-  <div class="container mt-5">
+  <div class="container my-5">
     <h1 class="text-center mb-4">Inscription</h1>
     <form @submit.prevent="handleRegister" class="form-register d-flex flex-column justify-content-center">
+      
       <!-- Informations personnelles -->
       <div class="form-section">
         <h5>Informations personnelles</h5>
         <div class="form-group">
           <label for="nomuser">Nom :</label>
           <input type="text" v-model="client.nomUser" id="nomuser" class="form-control" required maxlength="50"
-            placeholder="Saisissez votre nom">
+            placeholder="Saisissez votre nom" />
         </div>
         <div class="form-group">
           <label for="prenomuser">Prénom :</label>
           <input type="text" v-model="client.prenomUser" id="prenomuser" class="form-control" required maxlength="50"
-            placeholder="Saisissez votre prénom">
+            placeholder="Saisissez votre prénom" />
         </div>
         <div class="form-group">
           <label for="genreuser">Genre :</label>
@@ -25,53 +26,56 @@
         </div>
         <div class="form-group">
           <label for="datenaissance">Date de naissance :</label>
-          <input type="date" v-model="client.dateNaissance" id="datenaissance" class="form-control" required>
+          <input type="date" v-model="client.dateNaissance" id="datenaissance" class="form-control" required />
           <small>Vous devez avoir au moins 18 ans.</small>
         </div>
       </div>
+
       <!-- Coordonnées -->
       <div class="form-section">
         <h5>Coordonnées</h5>
         <div class="form-group">
           <label for="telephone">Téléphone :</label>
           <input type="tel" v-model="client.telephone" id="telephone" class="form-control" required
-            placeholder="06XXXXXXXX">
+            placeholder="06XXXXXXXX" />
         </div>
         <div class="form-group">
           <label for="emailuser">Email :</label>
           <input type="email" v-model="client.emailUser" id="emailuser" class="form-control" required
-            placeholder="exemple@mail.com">
+            placeholder="exemple@mail.com" />
         </div>
         <div class="form-group">
           <label for="libelleadresse">Adresse :</label>
           <input type="text" v-model="client.adresse" id="libelleadresse" class="form-control" required maxlength="100"
-            placeholder="Saisissez votre adresse">
+            placeholder="Saisissez votre adresse" />
         </div>
         <div class="form-group">
           <label for="nomville">Ville :</label>
           <input type="text" v-model="client.ville" id="nomville" class="form-control" required maxlength="50"
-            placeholder="Saisissez la ville">
+            placeholder="Saisissez la ville" />
         </div>
         <div class="form-group">
           <label for="codepostal">Code Postal :</label>
           <input type="text" v-model="client.codePostal" id="codepostal" class="form-control" required pattern="^\d{5}$"
-            placeholder="Saisissez votre code postal" maxlength="5">
+            placeholder="Saisissez votre code postal" maxlength="5" />
         </div>
       </div>
+
       <!-- Sécurité -->
       <div class="form-section">
         <h5>Sécurité</h5>
         <div class="form-group">
           <label for="motdepasseuser">Mot de passe :</label>
           <input type="password" v-model="client.motDePasseUser" id="motDePasseUser" class="form-control" required
-            minlength="8" placeholder="Saisissez un mot de passe sécurisé">
+            minlength="8" placeholder="Saisissez un mot de passe sécurisé" />
         </div>
         <div class="form-group">
           <label for="motdepasseuser_confirmation">Confirmation du mot de passe :</label>
           <input type="password" v-model="passwordConfirmation" id="motDePasseUser_confirmation" class="form-control"
-            required placeholder="Confirmez votre mot de passe">
+            required placeholder="Confirmez votre mot de passe" />
         </div>
       </div>
+
       <button type="submit" class="btn-login" :disabled="isLoading">S'inscrire</button>
     </form>
     <div v-if="errorMessage" class="alert-message error">
@@ -80,85 +84,73 @@
   </div>
 </template>
 
-<script>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useUserStore } from "@/stores/userStore";
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useUserStore } from "@/stores/userStore"
 
-export default {
-  setup() {
-    const store = useUserStore();
-    const router = useRouter();
+const store = useUserStore()
+const router = useRouter()
 
-    const client = ref({
-      nomUser: '',
-      prenomUser: '',
-      genreUser: '',
-      dateNaissance: '',
-      telephone: '',
-      emailUser: '',
-      adresse: '',
-      ville: '',
-      codePostal: '',
-      motdepasseuser: '',
-      typeClient: 'Uber'  // Ajout du typeClient par défaut
-    });
+const client = ref({
+  nomUser: '',
+  prenomUser: '',
+  genreUser: '',
+  dateNaissance: '',
+  telephone: '',
+  emailUser: '',
+  adresse: '',
+  ville: '',
+  codePostal: '',
+  motDePasseUser: '',
+  typeClient: 'Uber'
+})
 
-    const passwordConfirmation = ref('');
-    const isLoading = ref(false);
-    const errorMessage = ref('');
+const passwordConfirmation = ref('')
+const isLoading = ref(false)
+const errorMessage = ref('')
 
-    const validateForm = () => {
-      if (client.value.motDePasseUser !== passwordConfirmation.value) {
-        errorMessage.value = "Les mots de passe ne correspondent pas.";
-        return false;
-      }
-
-      if (client.value.motDePasseUser.length < 8) {
-        errorMessage.value = "Le mot de passe doit contenir au moins 8 caractères";
-        return false;
-      }
-
-      return true;
-    };
-
-    const handleRegister = async () => {
-      if (!validateForm()) return;
-
-      isLoading.value = true;
-      errorMessage.value = '';
-
-      try {
-        await store.register(client.value);
-
-        await store.login({
-          email: client.value.emailUser,
-          password: client.value.motDePasseUser
-        });
-
-        await router.push('/');
-      } catch (error) {
-        if (error.response?.data?.message === 'Cet email est déjà utilisé.') {
-          errorMessage.value = "Un compte existe déjà avec cette adresse email.";
-        } else if (error.response?.data?.errors) {
-          errorMessage.value = Object.values(error.response.data.errors).flat().join(', ');
-        } else {
-          errorMessage.value = "Erreur lors de l'inscription: " + (error.message || 'Erreur inconnue');
-        }
-      } finally {
-        isLoading.value = false;
-      }
-    };
-
-    return {
-      client,
-      passwordConfirmation,
-      isLoading,
-      errorMessage,
-      handleRegister
-    };
+const validateForm = () => {
+  if (client.value.motDePasseUser !== passwordConfirmation.value) {
+    errorMessage.value = "Les mots de passe ne correspondent pas."
+    return false
   }
-};
+
+  if (client.value.motDePasseUser.length < 8) {
+    errorMessage.value = "Le mot de passe doit contenir au moins 8 caractères"
+    return false
+  }
+
+  return true
+}
+
+const handleRegister = async () => {
+  if (!validateForm()) return
+
+  isLoading.value = true
+  errorMessage.value = ''
+
+  try {
+    await store.register(client.value)
+
+    await store.login({
+      email: client.value.emailUser,
+      password: client.value.motDePasseUser
+    })
+
+    await router.push('/')
+  } catch (error) {
+    if (error.response?.data?.message === 'Cet email est déjà utilisé.') {
+      errorMessage.value = "Un compte existe déjà avec cette adresse email."
+    } else if (error.response?.data?.errors) {
+      errorMessage.value = Object.values(error.response.data.errors).flat().join(', ')
+    } else {
+      errorMessage.value = "Erreur lors de l'inscription: " + (error.message || 'Erreur inconnue')
+    }
+  } finally {
+    isLoading.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -198,7 +190,6 @@ h2 {
   margin: 20px 0;
 }
 
-/* Alert Messages */
 .alert-message {
   font-size: 14px;
   font-weight: 500;
@@ -219,7 +210,6 @@ h2 {
   border: 1px solid #F44336;
 }
 
-/* Card Style */
 .card {
   background-color: #fff;
   border-radius: 10px;
@@ -234,7 +224,6 @@ h2 {
   margin-bottom: 15px;
 }
 
-/* Form Styles */
 .form-register {
   max-width: 400px;
   margin: auto;
@@ -258,7 +247,6 @@ h2 {
   color: #000;
 }
 
-/* Input Fields */
 label {
   font-weight: 600;
   margin-bottom: 5px;
@@ -285,7 +273,6 @@ textarea:focus {
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
 }
 
-/* Buttons */
 .btn-login {
   cursor: pointer;
   width: 100%;
@@ -304,7 +291,6 @@ textarea:focus {
   color: #fff;
 }
 
-/* Password Strength Indicator */
 #password-strength {
   font-size: 0.85rem;
   margin-top: 5px;
@@ -315,7 +301,6 @@ textarea:focus {
   list-style: none;
 }
 
-/* Checkbox and Radio */
 input[type="radio"],
 input[type="checkbox"] {
   width: auto;
@@ -337,7 +322,6 @@ input[type="checkbox"] {
   cursor: pointer;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   body {
     padding: 15px;

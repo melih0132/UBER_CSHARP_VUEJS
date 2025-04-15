@@ -25,23 +25,13 @@ namespace UberApi
 
             builder.Services.AddScoped<IDataRepository<Client>, ClientManager>();
             builder.Services.AddScoped<IDataRepository<Coursier>, CoursierManager>();
-            builder.Services.AddScoped<IDataRepository<Restaurateur>, RestaurateurManager>();
             builder.Services.AddScoped<IDataRepository<Adresse>, AdresseManager>();
-            builder.Services.AddScoped<IDataRepository<Vehicule>, VehiculeManager>();
-            builder.Services.AddScoped<IDataRepository<Livreur>, LivreurManager>();
             builder.Services.AddScoped<IDataRepository<Etablissement>, EtablissementManager>();
             builder.Services.AddScoped<IDataRepository<Commande>, CommandeManager>();
-            builder.Services.AddScoped<IDataRepository<Entretien>, EntretienManager>();
-            builder.Services.AddScoped<IDataRepository<Entreprise>, EntrepriseManager>();
             builder.Services.AddScoped<IDataRepository<CarteBancaire>, CarteBancaireManager>();
             builder.Services.AddScoped<IDataRepository<Ville>, VilleManager>();
-            builder.Services.AddScoped<IDataRepository<CodePostal>, CodePostalManager>();
-            builder.Services.AddScoped<IDataRepository<Pays>, PaysManager>();
-            builder.Services.AddScoped<IDataRepository<LieuFavori>, LieuFavoriManager>();
-            builder.Services.AddScoped<IDataRepository<Facture>, FactureManager>();
             builder.Services.AddScoped<IDataRepository<Produit>, ProduitManager>();
             builder.Services.AddScoped<IDataRepository<CategoriePrestation>, CategoriePrestationManager>();
-            builder.Services.AddScoped<IDataRepository<CategorieProduit>, CategorieProduitManager>();
             builder.Services.AddScoped<IDataRepository<TypePrestation>, TypePrestationManager>();
             builder.Services.AddScoped<IDataRepository<Course>, CourseManager>();
             builder.Services.AddScoped<ICarteBancaireRepository, CarteBancaireManager>();

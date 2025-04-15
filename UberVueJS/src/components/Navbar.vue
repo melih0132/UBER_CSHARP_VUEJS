@@ -33,7 +33,7 @@
       </li>
     </ul>
     <ul class="ul-link-login d-flex align-items-center">
-      <li>
+      <li v-if="!isCoursier">
         <router-link to="/commande/panier" class="a-panier" aria-label="Panier">
           <i class="fas fa-shopping-cart panier"></i>
         </router-link>

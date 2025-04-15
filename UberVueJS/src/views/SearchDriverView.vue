@@ -1,52 +1,142 @@
-
 <script setup>
-import { useUserStore } from '@/stores/userStore';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
+import { getCourseById, putCourseById } from '@/services/courseService.js';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+import { useRoute } from 'vue-router';
 
+const successMessage = ref('')
+const failMessage = ref('')
 const isConfirmed = ref(false);
 const router = useRouter();
+const route = useRoute();
+const course = ref([])
+const idCourse = route.params.idCourse;
+
+let intervalId = null;
+
+const showSuccessMessage = (idcourse) => {
+  successMessage.value = `Votre course N°${idcourse} a été réservé ! Patientez`;
+  setTimeout(() => {
+    successMessage.value = "";
+  }, 3000);
+}
+
+const showFailedMessage = (idcourse) => {
+  failMessage.value = `Votre course N°${idcourse} a été abandonné ! Patientez`;
+  setTimeout(() => {
+    failMessage.value = "";
+  }, 3000);
+}
+
+const checkCourseStatus = async () => {
+  try {
+
+    const response = await getCourseById(idCourse);
+    course.value = response;
+    console.log(course)
+    if (course.value.idCoursier !== null) {
+      console.log(course.value.idCoursier);
+      isConfirmed.value = true;
+      clearInterval(intervalId);
+    }
+  } catch (error) {
+    console.error("Erreur lors de la vérification du statut de la course :", error);
+  }
+};
 
 onMounted(() => {
-  
+  intervalId = setInterval(checkCourseStatus, 3000);
 });
 
-const proceed = () => {
-  router.push('/suivant'); 
+onUnmounted(() => {
+  clearInterval(intervalId);
+});
+
+const proceed = async () => {
+
+  await putCourseById(course.value.idCourse, course.value.idCoursier, 'En cours');
+  showSuccessMessage(course.value.idCourse)
+
+  await new Promise(resolve => setTimeout(resolve, 3000));
+
+  router.push('/');
+
 };
 
-const getBack = () => {
-  router.push('/'); 
+const getBack = async () => {
+  await putCourseById(course.value.idCourse, course.value.idCoursier, 'Annulée');
+  { { console.log('caca', course.value) } }
+  showFailedMessage(course.value.idCourse)
+  await new Promise(resolve => setTimeout(resolve, 3000));
+  router.push('/');
 };
-
-
-
 </script>
 
-
-
 <template>
+
+  <div v-if="failMessage" :class="['notification-failed', { hide: isHiding }]">
+    <p>{{ failMessage }}</p>
+  </div>
+
+  <div v-if="successMessage" :class="['notification', { hide: isHiding }]">
+    <p>{{ successMessage }}</p>
+  </div>
+
+
   <div class="main-container">
-    <h1>Recherche d'un coursier...</h1>
-    
     <div v-if="!isConfirmed" class="search-container">
       <p>Nous recherchons un coursier pour vous...</p>
       <div class="loader"></div>
     </div>
 
     <div v-if="isConfirmed" class="confirmation-container">
-      <h3>Coursier trouvé ✅</h3>
-      <p>Votre coursier {{ userStore.user.prenomUser }} a accepté votre demande.</p>
-      <button @click="proceed" class="confirm-button">Passer à l'étape suivante</button>
-      <button @click="getBack" class="confirm-button">Dernière chance d'annuler</button>
+      <h1>Coursier trouvé ✅</h1>
+      <p>Un coursier {{ }} a accepté votre demande.</p>
+      <button @click="proceed" class="btn-next-step">Passer à l'étape suivante</button>
+      <button @click="getBack" class="btn-next-step ms-3">Dernière chance d'annuler</button>
     </div>
   </div>
 </template>
 
-
-
 <style scoped>
+.notification {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  background-color: #28a745;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 16px;
+  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.notification-failed {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  background-color: #cf1e18;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 16px;
+  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.notification.hide {
+  opacity: 0;
+}
+
+.notification-failed.hide {
+  opacity: 0;
+}
+
 .main-container {
   text-align: center;
   max-width: 600px;
@@ -74,8 +164,13 @@ const getBack = () => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .confirmation-container {
@@ -83,19 +178,19 @@ const getBack = () => {
   margin-top: 20px;
 }
 
-.confirm-button {
-  background: black;
-  color: white;
-  padding: 12px 20px;
+.btn-next-step {
+  font-size: 14px;
+  font-weight: 600;
+  background: #000;
+  color: #fff;
   border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: bold;
+  padding: 0.5rem 1rem;
   border: none;
-  cursor: pointer;
-  transition: background 0.3s;
+  transition: background-color 0.3s ease;
 }
 
-.confirm-button:hover {
-  background: #333;
+.btn-next-step:hover {
+  background: #282828;
+  color: #fff;
 }
 </style>
