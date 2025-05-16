@@ -36,7 +36,7 @@ This project integrates Uber's API with Vue.js to create a user-friendly ride-sh
 
 ### Vue.js Components
 - The project uses Vue.js components for modular development.
-- Key components include `RideRequest.vue`, `RideHistory.vue`, and `UserAuth.vue`.
+- Key components include `HomeContent.vue`, `MapView.vue`, and `Navbar.vue`.
 
 ### Directory Structure
 Ensure the repository has a clear directory structure. Here’s a suggested structure:
