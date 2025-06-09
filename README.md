@@ -19,16 +19,27 @@ A full stack web application inspired by the Uber model, developed with **.NET C
 
 ## Technologies Used
 
-* **Back-end**: .NET 8, Entity Framework Core, RESTful Web API
-* **Front-end**: Vue.js 3, Vite, Pinia, Vue Router, Axios
+* **Back-end**: 
+  * .NET 8
+  * Entity Framework Core
+  * RESTful Web API
+  * xUnit for testing
+* **Front-end**: 
+  * Vue.js 3
+  * Vite
+  * Pinia (state management)
+  * Vue Router
+  * Axios
 * **Database**: PostgreSQL
-* **Testing**: xUnit (.NET) & JS Testing (Vue)
+* **Testing**: 
+  * xUnit for back-end (.NET)
+  * Unit testing for front-end (Vue)
 
 ---
 
 ## Prerequisites
 
-* [.NET 6 SDK](https://dotnet.microsoft.com/download)
+* [.NET 8 SDK](https://dotnet.microsoft.com/download)
 * [Node.js (>=16.x)](https://nodejs.org/)
 * [PostgreSQL](https://www.postgresql.org/)
 * [Vue CLI / Vite](https://vitejs.dev/)
@@ -41,12 +52,13 @@ A full stack web application inspired by the Uber model, developed with **.NET C
 
 ```bash
 git clone https://github.com/melih0132/uber-clone-dotnet-vue.git
+cd uber-clone-dotnet-vue
 ```
 
 ### 2. Start the API (.NET)
 
 ```bash
-cd UBER_S4/UberApi
+cd UberApi
 dotnet restore
 dotnet ef database update
 dotnet run
@@ -66,60 +78,82 @@ npm run dev
 
 ## Configuration
 
-### API Keys
-
-Set Uber API keys or other service keys in a `config.js` file or via `process.env`.
-
 ### Environment Variables
 
-Use a `.env` file to store API URLs and tokens:
+Create a `.env` file in the front-end project root to store API URLs and tokens:
 
 ```env
 VITE_API_URL=http://localhost:5000/api
+```
+
+### Database Configuration
+
+Configure your PostgreSQL connection in `UberApi/appsettings.Development.json`:
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Database=uber_clone;Username=your_username;Password=your_password"
+  }
+}
 ```
 
 ---
 
 ## Project Structure
 
-### Simplified Directory Tree
-
 ```
-UBER_S4/
-├── UberApi/         → C# .NET REST API
-│   ├── Controllers/ → REST Controllers
-│   ├── Models/      → Entities + Data Managers
-│   ├── Views/       → Razor MVC test/visualization pages
-│   ├── Migrations/  → EF Core migrations
-│   └── UberApiTests/→ Unit tests
-└── UberVueJS/       → Vue.js front-end application
-    ├── components/  → UI components (MapView, Navbar…)
-    ├── views/       → Main views (Login, UberEats…)
-    ├── services/    → API call services using Axios
-    ├── stores/      → Pinia stores (user state, rides…)
-    └── assets/      → Stylesheets, Leaflet JS files
+uber-clone-dotnet-vue/
+├── UberApi/                    → .NET Back-end API
+│   ├── UberApi/               → Main project
+│   │   ├── Controllers/       → REST Controllers
+│   │   ├── Models/           → Entities and models
+│   │   ├── Services/         → Business services
+│   │   ├── Data/             → EF Core context
+│   │   └── Migrations/       → EF Core migrations
+│   └── UberApiTests/         → Unit tests
+│
+└── UberVueJS/                 → Vue.js Front-end application
+    ├── src/
+    │   ├── components/       → Reusable UI components
+    │   ├── views/           → Main pages
+    │   ├── stores/          → Pinia stores
+    │   ├── services/        → API services
+    │   ├── assets/          → Static resources
+    │   └── router/          → Router configuration
+    ├── tests/               → Unit tests
+    └── public/              → Public files
 ```
 
 ---
 
 ## Best Practices
 
-* **TypeScript** is recommended for future front-end development
-* **Unit tests** for services and controllers
-* **Security**: role management, token expiration, data validation
-* **Modularity**: separated services, MVC architecture on the back-end
+* Use of **TypeScript** for front-end development
+* Unit tests for services and controllers
+* Security: role management, token expiration, data validation
+* Modular architecture: separated services, MVC architecture on the back-end
+* Code documentation with XML comments
+* Git Flow for version management
 
 ---
 
-## Contribution
+## Contributing
 
 Contributions are welcome:
 
-* Fork & submit a PR to propose improvements
-* Open issues to report bugs or suggest features
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
-## Group Project
+## University Project
 
-University project for the 4th semester of the Computer Science BUT program.
+This project was developed as part of the 4th semester of the Computer Science BUT program.
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
