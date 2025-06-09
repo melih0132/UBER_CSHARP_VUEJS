@@ -40,7 +40,7 @@ A full stack web application inspired by the Uber model, developed with **.NET C
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/melih0132/UBER_S4.git
+git clone https://github.com/melih0132/uber-clone-dotnet-vue.git
 ```
 
 ### 2. Start the API (.NET)
